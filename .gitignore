@@ -1,0 +1,33 @@
+# dependencies
+node_modules/
+.node_modules.lock
+
+# build / tooling
+dist/
+.output/
+.vinxi/
+.nitro/
+.tanstack/
+.vercel/
+.cache/
+*.tsbuildinfo
+
+# env & local secrets
+.env
+.env.*
+!.env.example
+
+# sandbox / local-only
+.grok/
+.project_id
+screenshots/
+artifacts/
+attachments/
+*.log
+.DS_Store
+
+# platform chrome (Grok install tutorial assets)
+public/__grok/
+
+# sandbox agent instructions
+AGENTS.md
