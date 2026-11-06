@@ -4,6 +4,14 @@ import { WORDS } from "@/data";
 
 const SAVE_KEY = "wortreise-save-v1";
 const SAVE_VERSION = 1;
+const BACKUP_VERSION = 1;
+
+export type BackupData = {
+  version: number;
+  backupVersion: number;
+  timestamp: string;
+  data: ProgressData;
+};
 
 export type ProgressData = {
   version: number;
@@ -100,6 +108,8 @@ type Store = ProgressData & {
   setSound: (on: boolean) => void;
   setDirection: (d: ProgressData["direction"]) => void;
   reset: () => void;
+  exportBackup: () => BackupData;
+  importBackup: (backup: BackupData) => { success: boolean; error?: string };
 };
 
 export const useProgress = create<Store>((set, get) => ({
@@ -176,6 +186,44 @@ export const useProgress = create<Store>((set, get) => ({
   reset: () => {
     persist(defaults);
     set({ ...defaults });
+  },
+  exportBackup: () => {
+    const s = get();
+    const backup: BackupData = {
+      version: SAVE_VERSION,
+      backupVersion: BACKUP_VERSION,
+      timestamp: new Date().toISOString(),
+      data: snapshot(s),
+    };
+    return backup;
+  },
+  importBackup: (backup: BackupData) => {
+    // Validate backup structure
+    if (!backup || typeof backup !== "object") {
+      return { success: false, error: "Invalid backup file" };
+    }
+    if (backup.backupVersion !== BACKUP_VERSION) {
+      return { success: false, error: `Unsupported backup version: ${backup.backupVersion}` };
+    }
+    if (!backup.data || typeof backup.data !== "object") {
+      return { success: false, error: "Backup missing progress data" };
+    }
+    // Validate required fields
+    const requiredFields: (keyof ProgressData)[] = [
+      "version", "xp", "streak", "lastPlayDate", "mastery",
+      "seen", "correct", "wrong", "bestSpeedScore", "bestCombo",
+      "sound", "direction"
+    ];
+    for (const field of requiredFields) {
+      if (!(field in backup.data)) {
+        return { success: false, error: `Backup missing field: ${field}` };
+      }
+    }
+    // Version check - migrate if needed (for future)
+    const data = { ...backup.data, version: SAVE_VERSION };
+    persist(data);
+    set(data);
+    return { success: true };
   },
 }));
 

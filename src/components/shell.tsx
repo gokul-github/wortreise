@@ -1,10 +1,11 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, House, Library, Stamp, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, House, Library, LogIn, Stamp, User, Volume2, VolumeX } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { unlockAudio } from "@/lib/sfx";
 import { unlockSpeech } from "@/lib/speech";
 import { useProgress } from "@/store/progress";
+import { SignedIn, SignedOut, UserButton, SIGN_IN_PATH } from "@/lib/auth/gates";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const hydrate = useProgress((s) => s.hydrate);
@@ -80,6 +81,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
             </button>
+            <SignedOut>
+              <Link
+                to={SIGN_IN_PATH}
+                className="ml-2 flex h-10 items-center gap-1.5 rounded-[10px] bg-accent px-3 text-sm font-medium text-accent-fg hover:bg-accent/90"
+              >
+                <LogIn className="size-4" />
+                Sign in
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <UserButton />
+            </SignedIn>
           </div>
         </div>
       </header>

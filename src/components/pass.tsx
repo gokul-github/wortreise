@@ -1,8 +1,10 @@
-import { Stamp } from "lucide-react";
+import { useRef, useState, useEffect } from "react";
+import { Download, Stamp, Upload, Database, RefreshCw, Volume2, Mic, Settings } from "lucide-react";
 import { TOPICS, STATS, VERBS } from "@/data";
 import { Button } from "@/components/ui/button";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
 import { cn } from "@/lib/utils";
+import { speakGerman, listVoices, getGermanVoices, saveVoicePreference, loadVoicePreference } from "@/lib/speech";
 
 export function Pass() {
   const mastery = useProgress((s) => s.mastery);
@@ -14,6 +16,103 @@ export function Pass() {
   const stamps = stampedTopics(mastery);
   const known = Object.values(mastery).filter((n) => n >= 3).length;
   const verbKnown = VERBS.filter((v) => (mastery[v.id] ?? 0) >= 3).length;
+
+  const [importStatus, setImportStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [debugInfo, setDebugInfo] = useState<string>("Click 'Debug' to inspect");
+  const [voiceSelectorOpen, setVoiceSelectorOpen] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const germanVoices = getGermanVoices();
+  const savedVoice = loadVoicePreference();
+  const currentVoice = germanVoices.find(v => v.name === savedVoice) || germanVoices[0];
+
+  const handleVoiceChange = (voiceName: string) => {
+    saveVoicePreference(voiceName);
+    setVoiceSelectorOpen(false);
+    setDebugInfo(`Voice preference saved: ${voiceName}\nClick "Test German" to hear it.`);
+  };
+
+  const handleExport = () => {
+    const backup = useProgress.getState().exportBackup();
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `wortreise-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const backup = JSON.parse(event.target?.result as string);
+        const result = useProgress.getState().importBackup(backup);
+        setImportStatus({
+          success: result.success,
+          message: result.success ? "Backup imported successfully!" : `Import failed: ${result.error}`,
+        });
+        if (result.success) {
+          useProgress.getState().hydrate();
+        }
+      } catch {
+        setImportStatus({ success: false, message: "Invalid backup file (not valid JSON)" });
+      }
+      e.target.value = "";
+    };
+    reader.readAsText(file);
+  };
+
+  const handleDebug = () => {
+    const storeState = useProgress.getState();
+    const lsRaw = localStorage.getItem("wortreise-save-v1");
+    let lsParsed = "empty";
+    try {
+      lsParsed = lsRaw ? JSON.stringify(JSON.parse(lsRaw), null, 2) : "empty";
+    } catch {
+      lsParsed = "corrupted";
+    }
+    setDebugInfo(
+      `STORE STATE:\n` +
+      `  xp: ${storeState.xp}\n` +
+      `  streak: ${storeState.streak}\n` +
+      `  lastPlayDate: ${storeState.lastPlayDate}\n` +
+      `  mastery entries: ${Object.keys(storeState.mastery).length}\n` +
+      `  seen entries: ${Object.keys(storeState.seen).length}\n` +
+      `  sound: ${storeState.sound}\n` +
+      `  direction: ${storeState.direction}\n\n` +
+      `LOCALSTORAGE (wortreise-save-v1):\n` +
+      lsParsed
+    );
+  };
+
+  const handleForceHydrate = () => {
+    useProgress.getState().hydrate();
+    setTimeout(() => handleDebug(), 100);
+  };
+
+  const handleListVoices = () => {
+    const voices = listVoices();
+    if (voices.length === 0) {
+      setDebugInfo("No voices available. Try clicking 'Test German' first to trigger voice loading.");
+    } else {
+      setDebugInfo(
+        `AVAILABLE VOICES (${voices.length}):\n\n` +
+        voices.map(v => `${v.name} (${v.lang})${v.default ? " ★ DEFAULT" : ""}`).join("\n")
+      );
+    }
+  };
+
+  const handleTestVoice = async () => {
+    setDebugInfo("Testing German voice...\nCheck browser console for details.");
+    await speakGerman("Hallo, wie geht es dir? Das ist ein Test der deutschen Aussprache.");
+    setTimeout(() => handleListVoices(), 500);
+  };
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -76,6 +175,121 @@ export function Pass() {
       >
         Reset local progress
       </Button>
+
+      <div className="mt-6 border-t border-border pt-6">
+        <p className="text-xs uppercase tracking-[0.18em] text-muted">Backup & Restore</p>
+        <p className="mt-2 text-sm text-muted">
+          Export your progress to a file, then import it on another device or browser.
+        </p>
+        <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            className="flex-1"
+          >
+            <Download className="mr-2 size-4" />
+            Export Backup
+          </Button>
+          <label className="flex-1 cursor-pointer">
+            <Button
+              variant="outline"
+              className="flex-1 justify-center"
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }}
+            >
+              <Upload className="mr-2 size-4" />
+              Import Backup
+            </Button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              className="sr-only"
+              onChange={handleImport}
+            />
+          </label>
+        </div>
+        {importStatus && (
+          <p className="mt-3 text-sm" style={{ color: importStatus.success ? "var(--color-accent)" : "var(--color-destructive)" }}>
+            {importStatus.message}
+          </p>
+        )}
+
+        <div className="mt-6 border-t border-border pt-6">
+          <p className="text-xs uppercase tracking-[0.18em] text-muted">Debug</p>
+          <p className="mt-2 text-sm text-muted">
+            Inspect current store state and localStorage.
+          </p>
+          <div className="mt-4 flex flex-col gap-2 sm:flex-row">
+            <Button variant="outline" onClick={handleDebug} className="flex-1">
+              <Database className="mr-2 size-4" />
+              Debug Store
+            </Button>
+            <Button variant="outline" onClick={handleForceHydrate} className="flex-1">
+              <RefreshCw className="mr-2 size-4" />
+              Force Hydrate
+            </Button>
+            <Button variant="outline" onClick={handleListVoices} className="flex-1">
+              <Mic className="mr-2 size-4" />
+              List Voices
+            </Button>
+            <Button variant="outline" onClick={handleTestVoice} className="flex-1">
+              <Volume2 className="mr-2 size-4" />
+              Test German
+            </Button>
+          </div>
+          <pre className="mt-3 text-[10px] text-muted bg-surface border border-border rounded p-3 overflow-auto max-h-64 whitespace-pre-wrap font-mono">
+            {debugInfo}
+          </pre>
+        </div>
+
+        {germanVoices.length > 0 && (
+          <div className="mt-6 border-t border-border pt-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-xs uppercase tracking-[0.18em] text-muted">Voice Settings</p>
+                <p className="mt-1 text-sm text-muted">
+                  Choose your preferred German voice (saved locally).
+                </p>
+              </div>
+              <span className="text-xs text-muted bg-surface px-2 py-1 rounded">
+                {germanVoices.length} German voice{germanVoices.length !== 1 ? "s" : ""} available
+              </span>
+            </div>
+            <div className="mt-4 flex flex-col gap-3">
+              <label className="flex items-center gap-3">
+                <span className="text-sm text-muted w-24">Current:</span>
+                <select
+                  value={currentVoice?.name || ""}
+                  onChange={(e) => handleVoiceChange(e.target.value)}
+                  className="flex-1 rounded-[10px] border border-border bg-surface px-3 py-2 text-sm text-fg focus:outline-none focus:ring-2 focus:ring-accent"
+                >
+                  {germanVoices.map((v) => (
+                    <option key={v.name} value={v.name}>
+                      {v.name} ({v.lang})
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  if (currentVoice) {
+                    speakGerman("Hallo, das ist ein Test der deutschen Stimme.");
+                  }
+                }}
+              >
+                <Volume2 className="mr-2 size-4" />
+                Test Selected Voice
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

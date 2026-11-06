@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as LoginRouteImport } from './routes/login'
 import { Route as PassRouteImport } from './routes/pass'
 import { Route as WordsRouteImport } from './routes/words'
 import { Route as PlayModeRouteImport } from './routes/play.$mode'
@@ -17,6 +18,11 @@ import { Route as PlayModeRouteImport } from './routes/play.$mode'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LoginRoute = LoginRouteImport.update({
+  id: '/login',
+  path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PassRoute = PassRouteImport.update({
@@ -37,12 +43,14 @@ const PlayModeRoute = PlayModeRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/pass': typeof PassRoute
   '/words': typeof WordsRoute
   '/play/$mode': typeof PlayModeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/pass': typeof PassRoute
   '/words': typeof WordsRoute
   '/play/$mode': typeof PlayModeRoute
@@ -50,20 +58,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/login': typeof LoginRoute
   '/pass': typeof PassRoute
   '/words': typeof WordsRoute
   '/play/$mode': typeof PlayModeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/pass' | '/words' | '/play/$mode'
+  fullPaths: '/' | '/login' | '/pass' | '/words' | '/play/$mode'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/pass' | '/words' | '/play/$mode'
-  id: '__root__' | '/' | '/pass' | '/words' | '/play/$mode'
+  to: '/' | '/login' | '/pass' | '/words' | '/play/$mode'
+  id: '__root__' | '/' | '/login' | '/pass' | '/words' | '/play/$mode'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  LoginRoute: typeof LoginRoute
   PassRoute: typeof PassRoute
   WordsRoute: typeof WordsRoute
   PlayModeRoute: typeof PlayModeRoute
@@ -76,6 +86,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/login': {
+      id: '/login'
+      path: '/login'
+      fullPath: '/login'
+      preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pass': {
@@ -104,6 +121,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  LoginRoute: LoginRoute,
   PassRoute: PassRoute,
   WordsRoute: WordsRoute,
   PlayModeRoute: PlayModeRoute,
