@@ -12,6 +12,8 @@ jobs:
   npm-audit:
     name: npm Audit
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -36,6 +38,8 @@ jobs:
   codeql:
     name: CodeQL Analysis
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs
+    if: github.actor != 'dependabot[bot]'
     permissions:
       security-events: write
       contents: read
@@ -61,7 +65,7 @@ jobs:
   dependency-review:
     name: Dependency Review
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request'
+    if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -74,6 +78,8 @@ jobs:
   secret-scan:
     name: Secret Scan
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

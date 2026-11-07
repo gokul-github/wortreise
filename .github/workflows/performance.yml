@@ -11,6 +11,8 @@ jobs:
   lighthouse:
     name: Lighthouse CI
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -50,6 +52,8 @@ jobs:
   bundle-size:
     name: Bundle Size
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

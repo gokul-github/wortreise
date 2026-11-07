@@ -18,6 +18,8 @@ jobs:
   deploy:
     name: Deploy to Production
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs (no access to secrets)
+    if: github.actor != 'dependabot[bot]'
     environment: ${{ github.event.inputs.environment || 'production' }}
     permissions:
       contents: read

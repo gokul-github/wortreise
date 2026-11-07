@@ -21,6 +21,8 @@ jobs:
   release:
     name: Create Release
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs (no access to secrets)
+    if: github.actor != 'dependabot[bot]'
     permissions:
       contents: write
       issues: write

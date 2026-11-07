@@ -9,6 +9,8 @@ jobs:
   deploy-preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
+    # Skip on dependabot PRs (no access to secrets)
+    if: github.actor != 'dependabot[bot]'
     permissions:
       contents: read
       deployments: write
