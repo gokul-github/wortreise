@@ -50,7 +50,11 @@ function createMockStorage(initialData: Record<string, string> = {}) {
     getItem: (key: string) => store[key] ?? null,
     setItem: (key: string, value: string) => { store[key] = value; },
     removeItem: (key: string) => { delete store[key]; },
-    clear: () => { Object.keys(store).forEach(k => delete store[k]); },
+    clear: () => { Object.keys(store).forEach((k) => delete store[k]); },
+    key: (index: number) => Object.keys(store)[index] ?? null,
+    get length() {
+      return Object.keys(store).length;
+    },
   };
 }
 
@@ -222,7 +226,7 @@ describe("Progress Store", () => {
     });
 
     it("calculates known verbs count", () => {
-      const mastery = { "verb-1": 3, "verb-2": 4, "verb-3": 2 };
+      const mastery: Record<string, number> = { "verb-1": 3, "verb-2": 4, "verb-3": 2 };
       const verbKnown = VERBS.filter((v) => (mastery[v.id] ?? 0) >= 3).length;
       assert.equal(verbKnown, 2);
     });

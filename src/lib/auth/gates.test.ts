@@ -44,10 +44,10 @@ function createMockUser(overrides: Partial<{
 }
 
 function resetMocks() {
-  mockUseSyncExternalStore.mock.reset();
-  mockUseState.mock.reset();
-  mockNavigate.mock.reset();
-  mockUseRouterState.mock.reset();
+  mockUseSyncExternalStore.mock.resetCalls();
+  mockUseState.mock.resetCalls();
+  mockNavigate.mock.resetCalls();
+  mockUseRouterState.mock.resetCalls();
 }
 
 // ── Auth Gates Tests ─────────────────────────────────────────────────────────

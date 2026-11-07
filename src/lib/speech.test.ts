@@ -19,7 +19,7 @@ function createMockSpeechSynthesis(voices: MockVoice[] = []) {
 
   const mockSynth = {
     getVoices: () => voices,
-    speak: mock.fn(() => {}),
+    speak: mock.fn((_utterance?: { voice?: { name?: string; lang?: string }; lang?: string; rate?: number }) => {}),
     cancel: mock.fn(() => {}),
     onvoiceschanged: null as (() => void) | null,
     pending: false,
@@ -99,7 +99,7 @@ describe("Speech Module", () => {
       setMockSpeechSynthesis(voices);
       const germanVoices = speechModule.getGermanVoices();
       assert.equal(germanVoices.length, 3);
-      assert.ok(germanVoices.every(v => v.lang.startsWith("de-") || v.lang === "de"));
+      assert.ok(germanVoices.every((v: { lang: string }) => v.lang.startsWith("de-") || v.lang === "de"));
     });
 
     it("includes voices with 'german' in name", () => {
@@ -180,19 +180,20 @@ describe("Speech Module", () => {
       localStorage.removeItem("wortreise-voice-preference");
       await speechModule.speakGerman("Test");
       const spokenVoice = mockSynth.speak.mock.calls[0]?.arguments[0]?.voice;
-      assert.ok(spokenVoice);
-      assert.ok(spokenVoice.lang.startsWith("de-"));
+      assert.ok(spokenVoice?.lang?.startsWith("de-"));
     });
 
     it("sets utter.lang to de-DE", async () => {
       await speechModule.speakGerman("Hallo");
       const utterance = mockSynth.speak.mock.calls[0]?.arguments[0];
+      assert.ok(utterance);
       assert.equal(utterance.lang, "de-DE");
     });
 
     it("sets utter.rate to 0.92", async () => {
       await speechModule.speakGerman("Hallo");
       const utterance = mockSynth.speak.mock.calls[0]?.arguments[0];
+      assert.ok(utterance);
       assert.equal(utterance.rate, 0.92);
     });
 

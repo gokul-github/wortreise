@@ -246,7 +246,7 @@ describe("Progress Store Integration", () => {
   });
 
   it("calculates known verbs count", () => {
-    const mastery = { "verb-1": 3, "verb-2": 4, "verb-3": 2 };
+    const mastery: Record<string, number> = { "verb-1": 3, "verb-2": 4, "verb-3": 2 };
     const verbKnown = VERBS.filter((v) => (mastery[v.id] ?? 0) >= 3).length;
     assert.equal(verbKnown, 2);
   });
