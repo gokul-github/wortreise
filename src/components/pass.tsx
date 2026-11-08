@@ -1,10 +1,38 @@
 import { useRef, useState, useEffect } from "react";
 import { Download, Stamp, Upload, Database, RefreshCw, Volume2, Mic, Settings } from "lucide-react";
-import { TOPICS, STATS, VERBS } from "@/data";
+import { TOPICS, STATS, VERBS, type TopicId } from "@/data";
 import { Button } from "@/components/ui/button";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
-import { cn } from "@/lib/utils";
 import { speakGerman, listVoices, getGermanVoices, saveVoicePreference, loadVoicePreference } from "@/lib/speech";
+
+/**
+ * Each district gets its own colour so the pass reads as a map rather than a
+ * uniform list. The values are tuned to sit on the warm paper background while
+ * staying clearly distinct from one another.
+ */
+const TOPIC_PALETTE: Record<TopicId, { base: string; soft: string; ink: string }> = {
+  zahlen: { base: "#2c4f7c", soft: "#d9e3f1", ink: "#1f3a5c" },
+  zeit: { base: "#8a5a20", soft: "#f3e6d2", ink: "#6b4517" },
+  person: { base: "#8a3344", soft: "#f1dde1", ink: "#6d2836" },
+  wohnen: { base: "#a0522d", soft: "#f3e1d5", ink: "#7d3f22" },
+  umwelt: { base: "#2f6b4a", soft: "#dcebe1", ink: "#245239" },
+  reisen: { base: "#1f6f6b", soft: "#d8ebe9", ink: "#175451" },
+  essen: { base: "#b45309", soft: "#f7e3cf", ink: "#8a3f07" },
+  einkaufen: { base: "#6b4a8a", soft: "#e8ddf2", ink: "#523870" },
+  dienste: { base: "#4a5568", soft: "#e0e4ea", ink: "#374151" },
+  lernen: { base: "#3f4f9c", soft: "#dfe2f4", ink: "#303c78" },
+  arbeit: { base: "#6b5340", soft: "#e9e0d6", ink: "#523f30" },
+  freizeit: { base: "#9c3f6b", soft: "#f2dce7", ink: "#7a3053" },
+  alltag: { base: "#5f6b2f", soft: "#e6e9d6", ink: "#4a5324" },
+};
+
+/** 6-digit hex + an alpha channel, for tints that blend with the page. */
+function tint(hex: string, alpha: number) {
+  const a = Math.round(Math.min(1, Math.max(0, alpha)) * 255)
+    .toString(16)
+    .padStart(2, "0");
+  return `${hex}${a}`;
+}
 
 export function Pass() {
   const mastery = useProgress((s) => s.mastery);
@@ -142,25 +170,39 @@ export function Pass() {
         {TOPICS.map((t) => {
           const m = topicMastery(mastery, t.id);
           const on = stamps.includes(t.id);
+          const palette = TOPIC_PALETTE[t.id];
           return (
             <div
               key={t.id}
-              className={cn(
-                "relative overflow-hidden rounded-[24px] border p-4",
-                on ? "border-accent/40 bg-accent-soft" : "border-border bg-surface",
-              )}
+              className="relative overflow-hidden rounded-[24px] border p-4 transition-colors"
+              style={{
+                borderColor: tint(palette.base, on ? 0.45 : 0.18),
+                backgroundColor: on ? palette.soft : tint(palette.soft, 0.55),
+              }}
             >
               <Stamp
-                className={cn(
-                  "absolute -right-2 -top-1 size-16 rotate-[-12deg]",
-                  on ? "text-accent/40" : "text-border",
-                )}
+                className="absolute -right-2 -top-1 size-16 rotate-[-12deg]"
+                style={{ color: tint(palette.base, on ? 0.5 : 0.18) }}
               />
-              <p className="font-display text-lg font-semibold">{t.de}</p>
+              <p
+                className="font-display text-lg font-semibold"
+                style={{ color: palette.ink }}
+              >
+                {t.de}
+              </p>
               <p className="text-xs text-muted">{t.en}</p>
               <p className="mt-3 text-sm tabular-nums text-fg">
                 {m.pct}% · {m.known}/{m.total}
               </p>
+              <div
+                className="mt-2 h-1.5 overflow-hidden rounded-full"
+                style={{ backgroundColor: tint(palette.soft, 0.7) }}
+              >
+                <div
+                  className="h-full rounded-full transition-[width] duration-300"
+                  style={{ width: `${m.pct}%`, backgroundColor: palette.base }}
+                />
+              </div>
             </div>
           );
         })}
