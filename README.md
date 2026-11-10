@@ -52,7 +52,7 @@ GitHub Actions:
 
 | Workflow | When |
 | --- | --- |
-| [Android build](.github/workflows/android-build.yml) | push / PR — debug APK artifact |
+| [Android build](.github/workflows/android-build.yml) | every push to `main` — debug APK artifact |
 | [Android test](.github/workflows/android-test.yml) | push / PR — typecheck, web tests, Android unit tests |
 | [Android release](.github/workflows/android-release.yml) | tag `v*` — APK attached to the GitHub release |
 
