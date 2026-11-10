@@ -4,4 +4,5 @@
     <color name="colorPrimaryDark">#173C35</color>
     <color name="colorAccent">#1F4E45</color>
     <color name="statusBar">#1F4E45</color>
+    <color name="splash_bg">#F1EBE1</color>
 </resources>

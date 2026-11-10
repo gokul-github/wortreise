@@ -21,17 +21,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="safe-pad-top sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-4">
-          <div className="flex min-w-0 items-center gap-6">
-            <Link to="/" className="flex min-w-0 items-baseline gap-2 text-fg no-underline">
-              <span className="truncate font-display text-lg font-semibold leading-none tracking-tight sm:text-xl">
-                Wortreise
-              </span>
-              <span className="hidden text-[11px] uppercase leading-none tracking-[0.18em] text-muted sm:inline">
-                A1
-              </span>
-            </Link>
+      <div className="safe-pad-top bg-bg">
+        <Link to="/" className="mx-auto block max-w-5xl no-underline">
+          <img
+            src="/banner.jpg"
+            alt="Wortreise — Goethe A1, Start Deutsch 1"
+            className="h-28 w-full object-cover object-center sm:h-32"
+          />
+        </Link>
+      </div>
+      <header className="safe-sticky sticky z-20 border-b border-border bg-bg/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-12 max-w-5xl items-center justify-between gap-2 px-4">
             <nav className="hidden items-center gap-5 text-sm sm:flex">
               <Link
                 to="/"
@@ -61,8 +61,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 Pass
               </Link>
             </nav>
-          </div>
-          <div className="flex shrink-0 items-center gap-1 text-sm leading-none sm:gap-2">
+            <div className="ml-auto flex shrink-0 items-center gap-1 text-sm leading-none sm:gap-2">
             <span className="inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums text-muted">
               <span className="font-medium text-fg">{xp}</span>
               <span>XP</span>
@@ -100,8 +99,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <SignedIn>
               <UserButton />
             </SignedIn>
+            </div>
           </div>
-        </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] pt-6 sm:pb-10">
