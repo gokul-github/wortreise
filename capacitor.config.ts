@@ -10,6 +10,13 @@ const config: CapacitorConfig = {
   server: {
     androidScheme: "https",
   },
+  plugins: {
+    SystemBars: {
+      insetsHandling: "css",
+      style: "LIGHT",
+      initialViewportFitValueHint: "cover",
+    },
+  },
 };
 
 export default config;

@@ -1,7 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { Capacitor } from "@capacitor/core";
-import { StatusBar, Style } from "@capacitor/status-bar";
+import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import {
   Outlet,
   RouterProvider,
@@ -144,8 +143,7 @@ const router = createRouter({
 });
 
 if (Capacitor.isNativePlatform()) {
-  void StatusBar.setBackgroundColor({ color: "#1F4E45" }).catch(() => undefined);
-  void StatusBar.setStyle({ style: Style.Dark }).catch(() => undefined);
+  void SystemBars.setStyle({ style: SystemBarsStyle.Light }).catch(() => undefined);
 }
 
 const root = document.getElementById("root");

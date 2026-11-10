@@ -82,6 +82,15 @@
   }
 }
 
+/* Android edge-to-edge: env() on new WebViews, Capacitor's CSS vars on older ones. */
+.safe-pad-top {
+  padding-top: max(env(safe-area-inset-top, 0px), var(--safe-area-inset-top, 0px));
+}
+
+.safe-pad-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), var(--safe-area-inset-bottom, 0px));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

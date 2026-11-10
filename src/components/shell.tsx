@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, House, Library, LogIn, Stamp, User, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, House, Library, LogIn, Stamp, Volume2, VolumeX } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { unlockAudio } from "@/lib/sfx";
@@ -21,12 +21,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh flex flex-col">
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/90 backdrop-blur-sm">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4">
-          <div className="flex items-center gap-6">
-            <Link to="/" className="flex items-baseline gap-2 no-underline text-fg">
-              <span className="font-display text-xl font-semibold tracking-tight">Wortreise</span>
-              <span className="hidden text-[11px] uppercase tracking-[0.18em] text-muted sm:inline">
+      <header className="safe-pad-top sticky top-0 z-20 border-b border-border bg-bg/95 backdrop-blur-sm">
+        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-2 px-4">
+          <div className="flex min-w-0 items-center gap-6">
+            <Link to="/" className="flex min-w-0 items-baseline gap-2 text-fg no-underline">
+              <span className="truncate font-display text-lg font-semibold leading-none tracking-tight sm:text-xl">
+                Wortreise
+              </span>
+              <span className="hidden text-[11px] uppercase leading-none tracking-[0.18em] text-muted sm:inline">
                 A1
               </span>
             </Link>
@@ -35,7 +37,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 to="/"
                 className={cn(
                   "no-underline",
-                  path === "/" ? "text-fg font-medium" : "text-muted hover:text-fg",
+                  path === "/" ? "font-medium text-fg" : "text-muted hover:text-fg",
                 )}
               >
                 Play
@@ -44,7 +46,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 to="/words"
                 className={cn(
                   "no-underline",
-                  path.startsWith("/words") ? "text-fg font-medium" : "text-muted hover:text-fg",
+                  path.startsWith("/words") ? "font-medium text-fg" : "text-muted hover:text-fg",
                 )}
               >
                 Words
@@ -53,26 +55,30 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 to="/pass"
                 className={cn(
                   "no-underline",
-                  path.startsWith("/pass") ? "text-fg font-medium" : "text-muted hover:text-fg",
+                  path.startsWith("/pass") ? "font-medium text-fg" : "text-muted hover:text-fg",
                 )}
               >
                 Pass
               </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-2 text-sm">
-            <span className="tabular-nums text-muted">
-              <span className="text-fg font-medium">{xp}</span> XP
+          <div className="flex shrink-0 items-center gap-1 text-sm leading-none sm:gap-2">
+            <span className="inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums text-muted">
+              <span className="font-medium text-fg">{xp}</span>
+              <span>XP</span>
             </span>
-            <span className="text-border-strong">·</span>
-            <span className="tabular-nums text-muted">
-              <span className="text-fg font-medium">{streak}</span> day
-              {streak === 1 ? "" : "s"}
+            <span className="text-border-strong" aria-hidden>
+              ·
+            </span>
+            <span className="inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums text-muted">
+              <span className="font-medium text-fg">{streak}</span>
+              <span className="hidden sm:inline">{streak === 1 ? "day" : "days"}</span>
+              <span className="sm:hidden">d</span>
             </span>
             <button
               type="button"
               aria-label={sound ? "Mute sounds" : "Unmute sounds"}
-              className="ml-1 grid size-10 place-items-center rounded-[10px] text-muted hover:bg-surface-2 hover:text-fg"
+              className="grid size-10 shrink-0 place-items-center rounded-[10px] text-muted hover:bg-surface-2 hover:text-fg"
               onClick={() => {
                 unlockAudio();
                 unlockSpeech();
@@ -84,10 +90,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <SignedOut>
               <Link
                 to={SIGN_IN_PATH}
-                className="ml-2 flex h-10 items-center gap-1.5 rounded-[10px] bg-accent px-3 text-sm font-medium text-accent-fg hover:bg-accent/90"
+                className="inline-flex h-10 shrink-0 items-center gap-1.5 whitespace-nowrap rounded-[10px] bg-accent px-2.5 text-sm font-medium leading-none text-accent-fg no-underline hover:bg-accent/90 sm:px-3"
               >
-                <LogIn className="size-4" />
-                Sign in
+                <LogIn className="size-4 shrink-0" />
+                <span className="hidden min-[400px]:inline">Sign in</span>
+                <span className="sr-only min-[400px]:hidden">Sign in</span>
               </Link>
             </SignedOut>
             <SignedIn>
@@ -97,10 +104,12 @@ export function Shell({ children }: { children: React.ReactNode }) {
         </div>
       </header>
 
-      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-24 pt-6 sm:pb-10">{children}</main>
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] pt-6 sm:pb-10">
+        {children}
+      </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 backdrop-blur-sm sm:hidden">
-        <div className="grid grid-cols-4 px-2 pb-[env(safe-area-inset-bottom)]">
+        <div className="safe-pad-bottom grid grid-cols-4 px-2">
           <NavItem to="/" icon={House} label="Play" active={path === "/"} />
           <NavItem to="/words" icon={Library} label="Words" active={path.startsWith("/words")} />
           <NavItem to="/pass" icon={Stamp} label="Pass" active={path.startsWith("/pass")} />

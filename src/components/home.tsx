@@ -73,7 +73,7 @@ export function Home() {
           Play through the official A1 word list — about {STATS.words} entries, {STATS.verbs}{" "}
           verbs with present-tense forms, and English for every card.
         </p>
-        <div className="mt-6 flex flex-wrap gap-x-6 gap-y-2 text-sm">
+        <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-3">
           <Stat k={known} v="words known" />
           <Stat k={xp} v="XP earned" />
           <Stat k={stamps.length} v="district stamps" />
@@ -164,8 +164,11 @@ export function Home() {
 
 function Stat({ k, v }: { k: number; v: string }) {
   return (
-    <p className="text-muted">
-      <span className="font-display text-xl font-semibold tabular-nums text-fg">{k}</span> {v}
+    <p className="inline-flex items-baseline gap-1.5 text-sm leading-none text-muted">
+      <span className="font-display text-[1.35rem] font-semibold leading-none tabular-nums text-fg">
+        {k}
+      </span>
+      <span>{v}</span>
     </p>
   );
 }
