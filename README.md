@@ -33,6 +33,31 @@ npm run typecheck
 npm run build
 ```
 
+## Android
+
+The same game ships as an Android app via [Capacitor](https://capacitorjs.com/). The WebView loads a static bundle of the game (progress still stays on the device).
+
+```bash
+npm run android:apk
+```
+
+The debug APK is written to `android/app/build/outputs/apk/debug/app-debug.apk`. Install it with `adb install -r` that file. The Android build needs JDK 21.
+
+```bash
+npm run test:android      # web bundle check + JVM unit tests
+npm run android:release   # release APK (signed when keystore env vars are set)
+```
+
+GitHub Actions:
+
+| Workflow | When |
+| --- | --- |
+| [Android build](.github/workflows/android-build.yml) | push / PR — debug APK artifact |
+| [Android test](.github/workflows/android-test.yml) | push / PR — typecheck, web tests, Android unit tests |
+| [Android release](.github/workflows/android-release.yml) | tag `v*` — APK attached to the GitHub release |
+
+To sign a release build, set `ANDROID_KEYSTORE_FILE`, `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS`, and `ANDROID_KEY_PASSWORD`. In GitHub, store the keystore as the base64 secret `ANDROID_KEYSTORE_BASE64` plus the three password/alias secrets.
+
 ## Stack
 
 React 19, TanStack Start, Tailwind v4, Zustand (localStorage save).
