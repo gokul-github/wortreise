@@ -1,4 +1,4 @@
-import { defineConfig, devices } from "@playwright/test";
+import { defineConfig, devices } from "playwright/test";
 
 export default defineConfig({
   testDir: "./e2e",
@@ -39,6 +39,11 @@ export default defineConfig({
     url: "http://localhost:8080",
     reuseExistingServer: !process.env.CI,
     timeout: 120000,
+    env: {
+      // Match the shipped local app (no Better Auth). CI has no `.grok/app-env.json`,
+      // so without this the suite would hit a live auth client and flake.
+      VITE_AUTH_ENABLED: "false",
+    },
   },
   expect: {
     toHaveScreenshot: {

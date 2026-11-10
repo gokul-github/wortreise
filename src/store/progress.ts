@@ -210,9 +210,18 @@ export const useProgress = create<Store>((set, get) => ({
     }
     // Validate required fields
     const requiredFields: (keyof ProgressData)[] = [
-      "version", "xp", "streak", "lastPlayDate", "mastery",
-      "seen", "correct", "wrong", "bestSpeedScore", "bestCombo",
-      "sound", "direction"
+      "version",
+      "xp",
+      "streak",
+      "lastPlayDate",
+      "mastery",
+      "seen",
+      "correct",
+      "wrong",
+      "bestSpeedScore",
+      "bestCombo",
+      "sound",
+      "direction",
     ];
     for (const field of requiredFields) {
       if (!(field in backup.data)) {
@@ -250,7 +259,11 @@ export function topicMastery(
 ): { known: number; total: number; pct: number } {
   const pool = WORDS.filter((w) => w.topic === topic);
   const known = pool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
-  return { known, total: pool.length, pct: pool.length ? Math.round((known / pool.length) * 100) : 0 };
+  return {
+    known,
+    total: pool.length,
+    pct: pool.length ? Math.round((known / pool.length) * 100) : 0,
+  };
 }
 
 export function stampedTopics(mastery: Record<string, number>): TopicId[] {

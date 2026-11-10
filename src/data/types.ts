@@ -1,15 +1,5 @@
 export type Pos =
-  | "noun"
-  | "verb"
-  | "adj"
-  | "adv"
-  | "prep"
-  | "conj"
-  | "pron"
-  | "num"
-  | "phrase"
-  | "det"
-  | "other";
+  "noun" | "verb" | "adj" | "adv" | "prep" | "conj" | "pron" | "num" | "phrase" | "det" | "other";
 
 export type TopicId =
   | "zahlen"

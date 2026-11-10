@@ -48,9 +48,15 @@ function createMockStorage(initialData: Record<string, string> = {}) {
   const store = { ...initialData };
   return {
     getItem: (key: string) => store[key] ?? null,
-    setItem: (key: string, value: string) => { store[key] = value; },
-    removeItem: (key: string) => { delete store[key]; },
-    clear: () => { Object.keys(store).forEach((k) => delete store[k]); },
+    setItem: (key: string, value: string) => {
+      store[key] = value;
+    },
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      Object.keys(store).forEach((k) => delete store[k]);
+    },
     key: (index: number) => Object.keys(store)[index] ?? null,
     get length() {
       return Object.keys(store).length;
@@ -161,25 +167,33 @@ describe("Progress Store", () => {
     it("calculates percentage correctly", () => {
       // Mock: topic has 10 words, 4 known (mastery >= 3)
       const mockMastery = {
-        "word1": 3, "word2": 4, "word3": 5, "word4": 3,
-        "word5": 2, "word6": 1, "word7": 0, "word8": 2, "word9": 1, "word10": 0,
+        word1: 3,
+        word2: 4,
+        word3: 5,
+        word4: 3,
+        word5: 2,
+        word6: 1,
+        word7: 0,
+        word8: 2,
+        word9: 1,
+        word10: 0,
       };
-      const known = Object.values(mockMastery).filter(n => n >= 3).length;
+      const known = Object.values(mockMastery).filter((n) => n >= 3).length;
       const total = 10;
       const pct = Math.round((known / total) * 100);
       assert.equal(pct, 40);
     });
 
     it("returns 0% when no words known", () => {
-      const mockMastery = { "word1": 0, "word2": 1, "word3": 2 };
-      const known = Object.values(mockMastery).filter(n => n >= 3).length;
+      const mockMastery = { word1: 0, word2: 1, word3: 2 };
+      const known = Object.values(mockMastery).filter((n) => n >= 3).length;
       const pct = mockMastery ? Math.round((known / 3) * 100) : 0;
       assert.equal(pct, 0);
     });
 
     it("returns 100% when all words known", () => {
-      const mockMastery = { "word1": 3, "word2": 4, "word3": 5 };
-      const known = Object.values(mockMastery).filter(n => n >= 3).length;
+      const mockMastery = { word1: 3, word2: 4, word3: 5 };
+      const known = Object.values(mockMastery).filter((n) => n >= 3).length;
       const pct = Math.round((known / 3) * 100);
       assert.equal(pct, 100);
     });
@@ -189,18 +203,25 @@ describe("Progress Store", () => {
     const topics = ["zahlen", "zeit", "person"];
 
     function getStampedTopics(mastery: Record<string, number>, words: typeof WORDS): string[] {
-      return topics.filter(t => {
-        const pool = words.filter(w => w.topic === t);
-        const known = pool.filter(w => (mastery[w.id] ?? 0) >= 3).length;
+      return topics.filter((t) => {
+        const pool = words.filter((w) => w.topic === t);
+        const known = pool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
         return pool.length ? Math.round((known / pool.length) * 100) >= 40 : false;
       });
     }
 
     it("stamps topic when >= 40% mastery", () => {
       const mastery: Record<string, number> = {
-        "word-zahlen-1": 3, "word-zahlen-2": 3, "word-zahlen-3": 3, "word-zahlen-4": 3,
-        "word-zahlen-5": 2, "word-zahlen-6": 2, "word-zahlen-7": 2, "word-zahlen-8": 2,
-        "word-zahlen-9": 2, "word-zahlen-10": 2, // 4/10 = 40%
+        "word-zahlen-1": 3,
+        "word-zahlen-2": 3,
+        "word-zahlen-3": 3,
+        "word-zahlen-4": 3,
+        "word-zahlen-5": 2,
+        "word-zahlen-6": 2,
+        "word-zahlen-7": 2,
+        "word-zahlen-8": 2,
+        "word-zahlen-9": 2,
+        "word-zahlen-10": 2, // 4/10 = 40%
       };
       const stamped = getStampedTopics(mastery, WORDS);
       assert.ok(stamped.includes("zahlen"));
@@ -208,9 +229,15 @@ describe("Progress Store", () => {
 
     it("does not stamp topic when < 40% mastery", () => {
       const mastery: Record<string, number> = {
-        "word-zahlen-1": 3, "word-zahlen-2": 3, "word-zahlen-3": 2, // only 2/10 = 20%
-        "word-zahlen-4": 2, "word-zahlen-5": 2, "word-zahlen-6": 2,
-        "word-zahlen-7": 2, "word-zahlen-8": 2, "word-zahlen-9": 2,
+        "word-zahlen-1": 3,
+        "word-zahlen-2": 3,
+        "word-zahlen-3": 2, // only 2/10 = 20%
+        "word-zahlen-4": 2,
+        "word-zahlen-5": 2,
+        "word-zahlen-6": 2,
+        "word-zahlen-7": 2,
+        "word-zahlen-8": 2,
+        "word-zahlen-9": 2,
         "word-zahlen-10": 2,
       };
       const stamped = getStampedTopics(mastery, WORDS);
@@ -237,8 +264,12 @@ describe("Progress Store", () => {
       const topic = TOPICS[0];
       const pool = WORDS.filter((w) => w.topic === topic.id);
       const mastery: Record<string, number> = {};
-      pool.slice(0, 4).forEach((w, i) => { mastery[w.id] = 3; });
-      pool.slice(4).forEach((w) => { mastery[w.id] = 2; });
+      pool.slice(0, 4).forEach((w, i) => {
+        mastery[w.id] = 3;
+      });
+      pool.slice(4).forEach((w) => {
+        mastery[w.id] = 2;
+      });
 
       const known = pool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
       const pct = pool.length ? Math.round((known / pool.length) * 100) : 0;

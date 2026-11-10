@@ -20,8 +20,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -30,21 +30,25 @@ jobs:
         run: npm run build
 
       - name: Start preview server
-        run: npm run preview &
-        env:
-          NODE_ENV: production
+        run: npm run preview -- --host 127.0.0.1 --port 8081 --strictPort &
 
       - name: Wait for server
-        run: sleep 10 && curl -f http://localhost:4173/
+        run: |
+          for i in $(seq 1 30); do
+            curl -sf http://127.0.0.1:8081/ && exit 0
+            sleep 2
+          done
+          echo "Preview server did not start"
+          exit 1
 
       - name: Run Lighthouse CI
         uses: treosh/lighthouse-ci-action@v11
         with:
           urls: |
-            http://localhost:4173/
-            http://localhost:4173/play/quiz
-            http://localhost:4173/words
-            http://localhost:4173/pass
+            http://127.0.0.1:8081/
+            http://127.0.0.1:8081/play/quiz
+            http://127.0.0.1:8081/words
+            http://127.0.0.1:8081/pass
           budgetPath: ./lighthouse-budget.json
           uploadArtifacts: true
           temporaryPublicStorage: true
@@ -61,8 +65,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '22'
-          cache: 'npm'
+          node-version: "22"
+          cache: "npm"
 
       - name: Install dependencies
         run: npm ci
@@ -76,7 +80,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "| File | Size | Gzipped |" >> $GITHUB_STEP_SUMMARY
           echo "|------|------|---------|" >> $GITHUB_STEP_SUMMARY
-          for file in dist/client/assets/*.js dist/client/assets/*.css; do
+          for file in .vercel/output/static/assets/*.js .vercel/output/static/assets/*.css; do
             if [ -f "$file" ]; then
               size=$(wc -c < "$file")
               gzipped=$(gzip -c "$file" | wc -c)
@@ -88,8 +92,8 @@ jobs:
         run: |
           MAX_JS=500000  # 500KB
           MAX_CSS=100000 # 100KB
-          
-          for file in dist/client/assets/*.js; do
+
+          for file in .vercel/output/static/assets/*.js; do
             if [ -f "$file" ]; then
               size=$(wc -c < "$file")
               if [ $size -gt $MAX_JS ]; then
@@ -98,8 +102,8 @@ jobs:
               fi
             fi
           done
-          
-          for file in dist/client/assets/*.css; do
+
+          for file in .vercel/output/static/assets/*.css; do
             if [ -f "$file" ]; then
               size=$(wc -c < "$file")
               if [ $size -gt $MAX_CSS ]; then
@@ -108,5 +112,5 @@ jobs:
               fi
             fi
           done
-          
+
           echo "✅ All bundles within size limits"

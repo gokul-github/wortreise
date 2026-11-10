@@ -28,12 +28,14 @@ const mockUseRouterState = mock.fn((opts) => opts.select({ location: { pathname:
 
 // ── Test Utilities ──────────────────────────────────────────────────────────
 
-function createMockUser(overrides: Partial<{
-  id: string;
-  displayName: string;
-  primaryEmail: string;
-  profileImageUrl: string;
-}> = {}) {
+function createMockUser(
+  overrides: Partial<{
+    id: string;
+    displayName: string;
+    primaryEmail: string;
+    profileImageUrl: string;
+  }> = {},
+) {
   return {
     id: "user-123",
     displayName: "Test User",
@@ -53,7 +55,10 @@ function resetMocks() {
 // ── Auth Gates Tests ─────────────────────────────────────────────────────────
 
 describe("Auth Gates - resolveSignInGateState", () => {
-  let resolveSignInGateState: (state: { isPending: boolean; hasUser: boolean }) => "pending" | "signed_in" | "signed_out";
+  let resolveSignInGateState: (state: {
+    isPending: boolean;
+    hasUser: boolean;
+  }) => "pending" | "signed_in" | "signed_out";
 
   beforeEach(async () => {
     const mod = await import("./sign-in-gate.ts");

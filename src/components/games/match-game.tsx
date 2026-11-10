@@ -133,7 +133,10 @@ export function MatchGame() {
                 isMatched && "border-success/40 bg-success/10 text-muted",
                 !isMatched && isSel && "border-accent bg-accent-soft",
                 !isMatched && isWrong && "border-danger bg-danger/10 shake-x",
-                !isMatched && !isSel && !isWrong && "border-border bg-surface hover:border-border-strong",
+                !isMatched &&
+                  !isSel &&
+                  !isWrong &&
+                  "border-border bg-surface hover:border-border-strong",
               )}
             >
               <span className="block text-[10px] uppercase tracking-[0.16em] text-muted">

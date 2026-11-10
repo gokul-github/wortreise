@@ -15,8 +15,7 @@ function Login() {
           Sign in to Wortreise
         </h1>
         <p className="mb-8 text-muted">
-          Continue with one of the providers below to save your progress and
-          earn district stamps.
+          Continue with one of the providers below to save your progress and earn district stamps.
         </p>
         <div className="max-w-sm mx-auto">
           <SignInButtons />

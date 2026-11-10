@@ -19,7 +19,13 @@ function createMockSpeechSynthesis(voices: MockVoice[] = []) {
 
   const mockSynth = {
     getVoices: () => voices,
-    speak: mock.fn((_utterance?: { voice?: { name?: string; lang?: string }; lang?: string; rate?: number }) => {}),
+    speak: mock.fn(
+      (_utterance?: {
+        voice?: { name?: string; lang?: string };
+        lang?: string;
+        rate?: number;
+      }) => {},
+    ),
     cancel: mock.fn(() => {}),
     onvoiceschanged: null as (() => void) | null,
     pending: false,
@@ -99,7 +105,9 @@ describe("Speech Module", () => {
       setMockSpeechSynthesis(voices);
       const germanVoices = speechModule.getGermanVoices();
       assert.equal(germanVoices.length, 3);
-      assert.ok(germanVoices.every((v: { lang: string }) => v.lang.startsWith("de-") || v.lang === "de"));
+      assert.ok(
+        germanVoices.every((v: { lang: string }) => v.lang.startsWith("de-") || v.lang === "de"),
+      );
     });
 
     it("includes voices with 'german' in name", () => {
@@ -127,9 +135,7 @@ describe("Speech Module", () => {
 
   describe("Voice Preference Persistence", () => {
     beforeEach(() => {
-      setMockSpeechSynthesis([
-        { name: "Anna", lang: "de-DE", localService: true, default: false },
-      ]);
+      setMockSpeechSynthesis([{ name: "Anna", lang: "de-DE", localService: true, default: false }]);
     });
 
     it("saves voice preference to localStorage", () => {
@@ -153,7 +159,9 @@ describe("Speech Module", () => {
     it("handles localStorage errors gracefully", () => {
       // Simulate quota exceeded
       const originalSetItem = localStorage.setItem;
-      localStorage.setItem = () => { throw new Error("Quota exceeded"); };
+      localStorage.setItem = () => {
+        throw new Error("Quota exceeded");
+      };
       assert.doesNotThrow(() => speechModule.saveVoicePreference("Test"));
       localStorage.setItem = originalSetItem;
     });
@@ -229,8 +237,18 @@ describe("Speech Module", () => {
       setMockSpeechSynthesis(voices);
       const listed = speechModule.listVoices();
       assert.equal(listed.length, 2);
-      assert.deepEqual(listed[0], { name: "Anna", lang: "de-DE", localService: true, default: false });
-      assert.deepEqual(listed[1], { name: "Alex", lang: "en-US", localService: true, default: true });
+      assert.deepEqual(listed[0], {
+        name: "Anna",
+        lang: "de-DE",
+        localService: true,
+        default: false,
+      });
+      assert.deepEqual(listed[1], {
+        name: "Alex",
+        lang: "en-US",
+        localService: true,
+        default: true,
+      });
     });
 
     it("returns empty array when no speechSynthesis", () => {

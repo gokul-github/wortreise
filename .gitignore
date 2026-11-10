@@ -31,3 +31,8 @@ public/__grok/
 
 # sandbox agent instructions
 AGENTS.md
+
+# test output
+playwright-report/
+test-results/
+

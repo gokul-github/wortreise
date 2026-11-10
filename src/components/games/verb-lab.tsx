@@ -100,7 +100,9 @@ export function VerbLab() {
           >
             {regularityLabel(q.word)}
           </Badge>
-          <Badge>Perfekt: {v.aux} + {v.participle}</Badge>
+          <Badge>
+            Perfekt: {v.aux} + {v.participle}
+          </Badge>
           {v.prefix ? <Badge>separable {v.prefix}-</Badge> : null}
           {v.reflexive ? <Badge>reflexive</Badge> : null}
         </div>
@@ -111,9 +113,7 @@ export function VerbLab() {
           </div>
           <SpeakButton text={q.word.lemma} />
         </div>
-        {v.stemNote ? (
-          <p className="mt-3 text-sm text-accent">{v.stemNote}</p>
-        ) : null}
+        {v.stemNote ? <p className="mt-3 text-sm text-accent">{v.stemNote}</p> : null}
         <p className="mt-5 text-sm uppercase tracking-[0.16em] text-muted">Present tense</p>
         <p className="mt-1 font-display text-2xl">
           <span className="text-muted">{q.personLabel}</span>{" "}
@@ -154,10 +154,7 @@ export function VerbLab() {
                 <tr key={p.key} className="border-t border-border first:border-0">
                   <td className="w-32 px-4 py-2.5 text-muted">{p.label}</td>
                   <td
-                    className={cn(
-                      "px-4 py-2.5 font-medium",
-                      p.key === q.person && "text-accent",
-                    )}
+                    className={cn("px-4 py-2.5 font-medium", p.key === q.person && "text-accent")}
                   >
                     {verbForm(q.word, p.key)}
                   </td>

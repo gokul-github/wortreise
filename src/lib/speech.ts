@@ -14,7 +14,7 @@ type TtsPlugin = {
 
 const Tts = registerPlugin<TtsPlugin>("Tts");
 
-function useNativeTts() {
+function androidTts() {
   return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
 }
 
@@ -31,7 +31,7 @@ const STORAGE_KEY = "wortreise-voice-preference";
 
 export function unlockSpeech() {
   unlocked = true;
-  if (useNativeTts()) {
+  if (androidTts()) {
     void Tts.stop().catch(() => undefined);
     return;
   }
@@ -40,7 +40,11 @@ export function unlockSpeech() {
 }
 
 // Get all German voices available in the browser
-export function getGermanVoices(): Array<{ name: string; lang: string; voice: SpeechSynthesisVoice }> {
+export function getGermanVoices(): Array<{
+  name: string;
+  lang: string;
+  voice: SpeechSynthesisVoice;
+}> {
   if (typeof window === "undefined" || !window.speechSynthesis) return [];
   const voices = window.speechSynthesis.getVoices();
   return voices
@@ -83,7 +87,7 @@ export function listVoices() {
 }
 
 export async function speakGerman(text: string) {
-  if (useNativeTts()) {
+  if (androidTts()) {
     await Tts.stop().catch(() => undefined);
     await Tts.speak({ text });
     unlocked = true;
@@ -109,7 +113,10 @@ export async function speakGerman(text: string) {
 
   // Debug: log all voices
   if (voices.length > 0) {
-    console.log("[speech] Available voices:", voices.map(v => `${v.name} (${v.lang})`).join(", "));
+    console.log(
+      "[speech] Available voices:",
+      voices.map((v) => `${v.name} (${v.lang})`).join(", "),
+    );
   } else {
     console.warn("[speech] No voices available yet!");
   }
@@ -132,10 +139,13 @@ export async function speakGerman(text: string) {
 
   // 2. Fallback: find any German voice
   if (!selectedVoice) {
-    selectedVoice = voices.find((v) => {
-      const lang = v.lang.toLowerCase();
-      return lang.startsWith("de-") || lang === "de";
-    }) || voices.find((v) => v.name.toLowerCase().includes("german")) || voices.find((v) => v.lang.toLowerCase().startsWith("de"));
+    selectedVoice =
+      voices.find((v) => {
+        const lang = v.lang.toLowerCase();
+        return lang.startsWith("de-") || lang === "de";
+      }) ||
+      voices.find((v) => v.name.toLowerCase().includes("german")) ||
+      voices.find((v) => v.lang.toLowerCase().startsWith("de"));
   }
 
   if (selectedVoice) {

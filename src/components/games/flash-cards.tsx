@@ -5,7 +5,15 @@ import { GenderChip } from "@/components/gender-chip";
 import { SpeakButton } from "@/components/speak-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PERSONS, pickN, regularityLabel, verbForm, wordsByTopic, type TopicId, type Word } from "@/data";
+import {
+  PERSONS,
+  pickN,
+  regularityLabel,
+  verbForm,
+  wordsByTopic,
+  type TopicId,
+  type Word,
+} from "@/data";
 import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/store/progress";

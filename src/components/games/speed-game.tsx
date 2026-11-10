@@ -167,7 +167,12 @@ export function SpeedGame() {
       </div>
       <Progress className="mt-3" value={(left / SECONDS) * 100} />
 
-      <div className={cn("mt-8 rounded-[28px] border border-border bg-surface p-6 shadow-ticket sm:p-8", shake && "shake-x")}>
+      <div
+        className={cn(
+          "mt-8 rounded-[28px] border border-border bg-surface p-6 shadow-ticket sm:p-8",
+          shake && "shake-x",
+        )}
+      >
         <p className="text-xs uppercase tracking-[0.18em] text-muted">
           {q.kind === "en-de" ? "German for" : "Means"}
         </p>

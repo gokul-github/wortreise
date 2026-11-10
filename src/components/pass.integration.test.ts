@@ -94,9 +94,18 @@ describe("Backup & Restore Logic", () => {
         return { success: false, error: "Backup missing progress data" };
       }
       const requiredFields = [
-        "version", "xp", "streak", "lastPlayDate", "mastery",
-        "seen", "correct", "wrong", "bestSpeedScore", "bestCombo",
-        "sound", "direction"
+        "version",
+        "xp",
+        "streak",
+        "lastPlayDate",
+        "mastery",
+        "seen",
+        "correct",
+        "wrong",
+        "bestSpeedScore",
+        "bestCombo",
+        "sound",
+        "direction",
       ];
       for (const field of requiredFields) {
         if (!(field in backup.data)) {
@@ -170,7 +179,11 @@ describe("Voice Selection Logic", () => {
     });
 
     assert.equal(germanVoices.length, 4); // Anna, Helena, Google Deutsch, Microsoft German
-    assert.ok(germanVoices.every(v => v.lang.startsWith("de-") || v.name.toLowerCase().includes("german")));
+    assert.ok(
+      germanVoices.every(
+        (v) => v.lang.startsWith("de-") || v.name.toLowerCase().includes("german"),
+      ),
+    );
   });
 
   it("saves and loads voice preference", () => {
@@ -231,7 +244,9 @@ LOCALSTORAGE (wortreise-save-v1):
       { name: "Google Deutsch", lang: "de-DE", localService: false, default: true },
     ];
 
-    const voiceList = voices.map(v => `${v.name} (${v.lang})${v.default ? " ★ DEFAULT" : ""}`).join("\n");
+    const voiceList = voices
+      .map((v) => `${v.name} (${v.lang})${v.default ? " ★ DEFAULT" : ""}`)
+      .join("\n");
 
     assert.ok(voiceList.includes("Anna (de-DE)"));
     assert.ok(voiceList.includes("Google Deutsch (de-DE) ★ DEFAULT"));
@@ -255,8 +270,12 @@ describe("Progress Store Integration", () => {
     const topic = TOPICS[0];
     const pool = WORDS.filter((w) => w.topic === topic.id);
     const mastery: Record<string, number> = {};
-    pool.slice(0, 4).forEach((w, i) => { mastery[w.id] = 3; });
-    pool.slice(4).forEach((w) => { mastery[w.id] = 2; });
+    pool.slice(0, 4).forEach((w, i) => {
+      mastery[w.id] = 3;
+    });
+    pool.slice(4).forEach((w) => {
+      mastery[w.id] = 2;
+    });
 
     const known = pool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
     const pct = pool.length ? Math.round((known / pool.length) * 100) : 0;
@@ -269,17 +288,24 @@ describe("Progress Store Integration", () => {
     const topics = ["zahlen", "zeit", "person"];
 
     function getStampedTopics(mastery: Record<string, number>, words: typeof WORDS): string[] {
-      return topics.filter(t => {
-        const topicPool = words.filter(w => w.topic === t);
-        const known = topicPool.filter(w => (mastery[w.id] ?? 0) >= 3).length;
+      return topics.filter((t) => {
+        const topicPool = words.filter((w) => w.topic === t);
+        const known = topicPool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
         return topicPool.length ? Math.round((known / topicPool.length) * 100) >= 40 : false;
       });
     }
 
     const mastery: Record<string, number> = {
-      "word-zahlen-1": 3, "word-zahlen-2": 3, "word-zahlen-3": 3, "word-zahlen-4": 3,
-      "word-zahlen-5": 2, "word-zahlen-6": 2, "word-zahlen-7": 2, "word-zahlen-8": 2,
-      "word-zahlen-9": 2, "word-zahlen-10": 2, // 4/10 = 40%
+      "word-zahlen-1": 3,
+      "word-zahlen-2": 3,
+      "word-zahlen-3": 3,
+      "word-zahlen-4": 3,
+      "word-zahlen-5": 2,
+      "word-zahlen-6": 2,
+      "word-zahlen-7": 2,
+      "word-zahlen-8": 2,
+      "word-zahlen-9": 2,
+      "word-zahlen-10": 2, // 4/10 = 40%
     };
 
     const stamped = getStampedTopics(mastery, WORDS);

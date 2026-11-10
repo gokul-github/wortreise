@@ -30,6 +30,8 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: platform-tools
 
       - name: Install SDK packages
         run: |
@@ -42,11 +44,19 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
-      - name: Decode release keystore
-        if: ${{ secrets.ANDROID_KEYSTORE_BASE64 != '' }}
+      - name: Check release keystore
+        id: keystore
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/wortreise-release.jks"
-          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/wortreise-release.jks" >> "$GITHUB_ENV"
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/wortreise-release.jks"
+            echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/wortreise-release.jks" >> "$GITHUB_ENV"
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "No ANDROID_KEYSTORE_BASE64 secret — the release job will build a debug-signed APK."
+          fi
 
       - name: Build web bundle
         run: npm run build:android

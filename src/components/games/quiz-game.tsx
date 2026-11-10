@@ -138,7 +138,12 @@ export function QuizGame() {
       </div>
       <Progress className="mt-2" value={((idx + (picked ? 1 : 0)) / round.length) * 100} />
 
-      <div className={cn("mt-8 rounded-[28px] border border-border bg-surface p-6 shadow-ticket sm:p-8", shake && "shake-x")}>
+      <div
+        className={cn(
+          "mt-8 rounded-[28px] border border-border bg-surface p-6 shadow-ticket sm:p-8",
+          shake && "shake-x",
+        )}
+      >
         <p className="text-xs uppercase tracking-[0.18em] text-muted">
           {q.kind === "article"
             ? "Which article?"

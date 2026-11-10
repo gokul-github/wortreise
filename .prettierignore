@@ -1,0 +1,10 @@
+node_modules
+dist
+android/app/build
+android/.gradle
+android/app/src/main/assets
+.grok
+coverage
+playwright-report
+test-results
+src/routeTree.gen.ts

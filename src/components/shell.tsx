@@ -32,36 +32,36 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </div>
       <header className="safe-sticky sticky z-20 border-b border-border bg-bg/95 backdrop-blur-sm">
         <div className="mx-auto flex h-12 max-w-5xl items-center justify-between gap-2 px-4">
-            <nav className="hidden items-center gap-5 text-sm sm:flex">
-              <Link
-                to="/"
-                className={cn(
-                  "no-underline",
-                  path === "/" ? "font-medium text-fg" : "text-muted hover:text-fg",
-                )}
-              >
-                Play
-              </Link>
-              <Link
-                to="/words"
-                className={cn(
-                  "no-underline",
-                  path.startsWith("/words") ? "font-medium text-fg" : "text-muted hover:text-fg",
-                )}
-              >
-                Words
-              </Link>
-              <Link
-                to="/pass"
-                className={cn(
-                  "no-underline",
-                  path.startsWith("/pass") ? "font-medium text-fg" : "text-muted hover:text-fg",
-                )}
-              >
-                Pass
-              </Link>
-            </nav>
-            <div className="ml-auto flex shrink-0 items-center gap-1 text-sm leading-none sm:gap-2">
+          <nav className="hidden items-center gap-5 text-sm sm:flex">
+            <Link
+              to="/"
+              className={cn(
+                "no-underline",
+                path === "/" ? "font-medium text-fg" : "text-muted hover:text-fg",
+              )}
+            >
+              Play
+            </Link>
+            <Link
+              to="/words"
+              className={cn(
+                "no-underline",
+                path.startsWith("/words") ? "font-medium text-fg" : "text-muted hover:text-fg",
+              )}
+            >
+              Words
+            </Link>
+            <Link
+              to="/pass"
+              className={cn(
+                "no-underline",
+                path.startsWith("/pass") ? "font-medium text-fg" : "text-muted hover:text-fg",
+              )}
+            >
+              Pass
+            </Link>
+          </nav>
+          <div className="ml-auto flex shrink-0 items-center gap-1 text-sm leading-none sm:gap-2">
             <span className="inline-flex items-baseline gap-1 whitespace-nowrap tabular-nums text-muted">
               <span className="font-medium text-fg">{xp}</span>
               <span>XP</span>
@@ -99,8 +99,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <SignedIn>
               <UserButton />
             </SignedIn>
-            </div>
           </div>
+        </div>
       </header>
 
       <main className="mx-auto w-full max-w-5xl flex-1 px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom,0px))] pt-6 sm:pb-10">

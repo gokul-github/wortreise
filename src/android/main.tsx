@@ -129,13 +129,7 @@ const playRoute = createRoute({
   },
 });
 
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  wordsRoute,
-  passRoute,
-  loginRoute,
-  playRoute,
-]);
+const routeTree = rootRoute.addChildren([indexRoute, wordsRoute, passRoute, loginRoute, playRoute]);
 
 const router = createRouter({
   routeTree,

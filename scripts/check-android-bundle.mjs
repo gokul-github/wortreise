@@ -2,7 +2,11 @@ import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
 
 const indexPath = "dist/android/index.html";
-assert.equal(existsSync(indexPath), true, "missing dist/android/index.html — run npm run build:android");
+assert.equal(
+  existsSync(indexPath),
+  true,
+  "missing dist/android/index.html — run npm run build:android",
+);
 const html = readFileSync(indexPath, "utf8");
 assert.match(html, /Wortreise/);
 assert.match(html, /assets\//);

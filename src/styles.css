@@ -32,7 +32,8 @@
   --radius-xl: 24px;
   --radius-2xl: 32px;
 
-  --shadow-ticket: 0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent),
+  --shadow-ticket:
+    0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent),
     0 12px 32px -18px color-mix(in oklab, var(--color-ink) 28%, transparent);
 }
 
@@ -54,8 +55,10 @@
     color: var(--color-fg);
     font-family: var(--font-sans);
     line-height: 1.5;
-    background-image:
-      radial-gradient(color-mix(in oklab, var(--color-ink) 5%, transparent) 0.6px, transparent 0.6px);
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--color-ink) 5%, transparent) 0.6px,
+      transparent 0.6px
+    );
     background-size: 4px 4px;
   }
 

@@ -65,13 +65,15 @@ export function Home() {
           aria-hidden
           className="pointer-events-none absolute -right-8 -top-10 size-40 rounded-full border-2 border-dashed border-accent/25"
         />
-        <p className="text-xs uppercase tracking-[0.22em] text-muted">Goethe A1 · Start Deutsch 1</p>
+        <p className="text-xs uppercase tracking-[0.22em] text-muted">
+          Goethe A1 · Start Deutsch 1
+        </p>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
           Wortreise
         </h1>
         <p className="mt-4 max-w-lg text-muted">
-          Play through the official A1 word list — about {STATS.words} entries, {STATS.verbs}{" "}
-          verbs with present-tense forms, and English for every card.
+          Play through the official A1 word list — about {STATS.words} entries, {STATS.verbs} verbs
+          with present-tense forms, and English for every card.
         </p>
         <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-3">
           <Stat k={known} v="words known" />
@@ -98,7 +100,10 @@ export function Home() {
       <section className="mt-10">
         <div className="flex items-end justify-between gap-4">
           <h2 className="font-display text-2xl font-semibold">Choose a ticket</h2>
-          <Link to="/pass" className="hidden items-center gap-1 text-sm text-accent no-underline sm:inline-flex">
+          <Link
+            to="/pass"
+            className="hidden items-center gap-1 text-sm text-accent no-underline sm:inline-flex"
+          >
             <Stamp className="size-4" />
             Reisepass
           </Link>

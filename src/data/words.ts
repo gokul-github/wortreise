@@ -672,13 +672,11 @@ export const LEXICON_WORDS: Word[] = RAW.split("\n")
   .map((line) => line.trim())
   .filter((line) => line.length > 0)
   .map((line) => {
-    const [lemma, pos, en, topic, example, exampleEn, article, plural, feminine] =
-      line.split("|");
+    const [lemma, pos, en, topic, example, exampleEn, article, plural, feminine] = line.split("|");
     const word: Word = {
       id: slug(lemma ?? "", pos ?? "", en ?? ""),
       lemma: lemma ?? "",
-      display:
-        article && lemma ? `${article} ${lemma}` : (lemma ?? ""),
+      display: article && lemma ? `${article} ${lemma}` : (lemma ?? ""),
       pos: (pos ?? "other") as Pos,
       en: en ?? "",
       topic: (topic ?? "alltag") as TopicId,

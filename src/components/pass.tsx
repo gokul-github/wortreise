@@ -3,7 +3,13 @@ import { Download, Stamp, Upload, Database, RefreshCw, Volume2, Mic, Settings } 
 import { TOPICS, STATS, VERBS, type TopicId } from "@/data";
 import { Button } from "@/components/ui/button";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
-import { speakGerman, listVoices, getGermanVoices, saveVoicePreference, loadVoicePreference } from "@/lib/speech";
+import {
+  speakGerman,
+  listVoices,
+  getGermanVoices,
+  saveVoicePreference,
+  loadVoicePreference,
+} from "@/lib/speech";
 
 /**
  * Each district gets its own colour so the pass reads as a map rather than a
@@ -45,14 +51,16 @@ export function Pass() {
   const known = Object.values(mastery).filter((n) => n >= 3).length;
   const verbKnown = VERBS.filter((v) => (mastery[v.id] ?? 0) >= 3).length;
 
-  const [importStatus, setImportStatus] = useState<{ success: boolean; message: string } | null>(null);
+  const [importStatus, setImportStatus] = useState<{ success: boolean; message: string } | null>(
+    null,
+  );
   const [debugInfo, setDebugInfo] = useState<string>("Click 'Debug' to inspect");
   const [voiceSelectorOpen, setVoiceSelectorOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const germanVoices = getGermanVoices();
   const savedVoice = loadVoicePreference();
-  const currentVoice = germanVoices.find(v => v.name === savedVoice) || germanVoices[0];
+  const currentVoice = germanVoices.find((v) => v.name === savedVoice) || germanVoices[0];
 
   const handleVoiceChange = (voiceName: string) => {
     saveVoicePreference(voiceName);
@@ -83,7 +91,9 @@ export function Pass() {
         const result = useProgress.getState().importBackup(backup);
         setImportStatus({
           success: result.success,
-          message: result.success ? "Backup imported successfully!" : `Import failed: ${result.error}`,
+          message: result.success
+            ? "Backup imported successfully!"
+            : `Import failed: ${result.error}`,
         });
         if (result.success) {
           useProgress.getState().hydrate();
@@ -107,15 +117,15 @@ export function Pass() {
     }
     setDebugInfo(
       `STORE STATE:\n` +
-      `  xp: ${storeState.xp}\n` +
-      `  streak: ${storeState.streak}\n` +
-      `  lastPlayDate: ${storeState.lastPlayDate}\n` +
-      `  mastery entries: ${Object.keys(storeState.mastery).length}\n` +
-      `  seen entries: ${Object.keys(storeState.seen).length}\n` +
-      `  sound: ${storeState.sound}\n` +
-      `  direction: ${storeState.direction}\n\n` +
-      `LOCALSTORAGE (wortreise-save-v1):\n` +
-      lsParsed
+        `  xp: ${storeState.xp}\n` +
+        `  streak: ${storeState.streak}\n` +
+        `  lastPlayDate: ${storeState.lastPlayDate}\n` +
+        `  mastery entries: ${Object.keys(storeState.mastery).length}\n` +
+        `  seen entries: ${Object.keys(storeState.seen).length}\n` +
+        `  sound: ${storeState.sound}\n` +
+        `  direction: ${storeState.direction}\n\n` +
+        `LOCALSTORAGE (wortreise-save-v1):\n` +
+        lsParsed,
     );
   };
 
@@ -127,11 +137,13 @@ export function Pass() {
   const handleListVoices = () => {
     const voices = listVoices();
     if (voices.length === 0) {
-      setDebugInfo("No voices available. Try clicking 'Test German' first to trigger voice loading.");
+      setDebugInfo(
+        "No voices available. Try clicking 'Test German' first to trigger voice loading.",
+      );
     } else {
       setDebugInfo(
         `AVAILABLE VOICES (${voices.length}):\n\n` +
-        voices.map(v => `${v.name} (${v.lang})${v.default ? " ★ DEFAULT" : ""}`).join("\n")
+          voices.map((v) => `${v.name} (${v.lang})${v.default ? " ★ DEFAULT" : ""}`).join("\n"),
       );
     }
   };
@@ -184,10 +196,7 @@ export function Pass() {
                 className="absolute -right-2 -top-1 size-16 rotate-[-12deg]"
                 style={{ color: tint(palette.base, on ? 0.5 : 0.18) }}
               />
-              <p
-                className="font-display text-lg font-semibold"
-                style={{ color: palette.ink }}
-              >
+              <p className="font-display text-lg font-semibold" style={{ color: palette.ink }}>
                 {t.de}
               </p>
               <p className="text-xs text-muted">{t.en}</p>
@@ -224,11 +233,7 @@ export function Pass() {
           Export your progress to a file, then import it on another device or browser.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <Button
-            variant="outline"
-            onClick={handleExport}
-            className="flex-1"
-          >
+          <Button variant="outline" onClick={handleExport} className="flex-1">
             <Download className="mr-2 size-4" />
             Export Backup
           </Button>
@@ -255,16 +260,19 @@ export function Pass() {
           </label>
         </div>
         {importStatus && (
-          <p className="mt-3 text-sm" style={{ color: importStatus.success ? "var(--color-accent)" : "var(--color-destructive)" }}>
+          <p
+            className="mt-3 text-sm"
+            style={{
+              color: importStatus.success ? "var(--color-accent)" : "var(--color-destructive)",
+            }}
+          >
             {importStatus.message}
           </p>
         )}
 
         <div className="mt-6 border-t border-border pt-6">
           <p className="text-xs uppercase tracking-[0.18em] text-muted">Debug</p>
-          <p className="mt-2 text-sm text-muted">
-            Inspect current store state and localStorage.
-          </p>
+          <p className="mt-2 text-sm text-muted">Inspect current store state and localStorage.</p>
           <div className="mt-4 flex flex-col gap-2 sm:flex-row">
             <Button variant="outline" onClick={handleDebug} className="flex-1">
               <Database className="mr-2 size-4" />

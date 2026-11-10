@@ -28,14 +28,7 @@ function PlayMode() {
       {mode === "verbs" ? <VerbLab /> : null}
       {mode === "match" ? <MatchGame /> : null}
       {mode === "cards" ? <FlashCards /> : null}
-      {![
-        "quiz",
-        "speed",
-        "type",
-        "verbs",
-        "match",
-        "cards",
-      ].includes(mode) ? (
+      {!["quiz", "speed", "type", "verbs", "match", "cards"].includes(mode) ? (
         <p className="text-muted">Unknown ticket. Head back to the hall.</p>
       ) : null}
     </Shell>

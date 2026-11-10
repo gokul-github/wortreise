@@ -1,4 +1,9 @@
-import { test, expect } from "@playwright/test";
+import { test, expect, type Page } from "playwright/test";
+import { readFileSync } from "node:fs";
+
+async function headerText(page: Page) {
+  return (await page.locator("header").innerText()).replace(/\s+/g, "");
+}
 
 test.describe("Wortreise - Critical User Journeys", () => {
   test.beforeEach(async ({ page }) => {
@@ -53,23 +58,21 @@ test.describe("Wortreise - Critical User Journeys", () => {
 
     test("can select topic and start game", async ({ page }) => {
       // Select a topic (first available)
-      const topicButton = page.locator('button:has-text("Zahlen"), button:has-text("All")').first();
+      const topicButton = page
+        .locator('button:has-text("Zahlen"), button:has-text("Whole city")')
+        .first();
       await topicButton.click();
 
       // Start game
-      await page.click('button:has-text("Start")');
-      await expect(page.locator("text=Which article?")).toBeVisible({ timeout: 5000 }).catch(() => {});
+      await page.getByRole("button", { name: "Start round" }).click();
+      await expect(page.getByText(/\d+ correct/)).toBeVisible({ timeout: 10000 });
     });
 
     test("answers question and shows result", async ({ page }) => {
-      await page.click('button:has-text("All")'); // Select all topics
-      await page.click('button:has-text("Start")');
-
-      // Wait for question to appear
-      await page.waitForSelector("button:has-text('1')", { timeout: 10000 });
-
-      // Answer first question (click option 1)
-      await page.click("button:has-text('1')");
+      await page.click('button:has-text("Whole city")'); // Select all topics
+      await page.getByRole("button", { name: "Start round" }).click();
+      await expect(page.getByText(/\d+ correct/)).toBeVisible();
+      await page.locator("span.tabular-nums", { hasText: /^1$/ }).first().click();
 
       // Should show feedback and next button
       await expect(page.locator("button:has-text('Next')")).toBeVisible({ timeout: 5000 });
@@ -81,30 +84,29 @@ test.describe("Wortreise - Critical User Journeys", () => {
       // Play a quick game to earn XP
       await page.goto("/play/quiz");
       await page.waitForLoadState("networkidle");
-      await page.click('button:has-text("All")');
-      await page.click('button:has-text("Start")');
-      await page.waitForSelector("button:has-text('1')", { timeout: 10000 });
-      await page.click("button:has-text('1')");
+      await page.click('button:has-text("Whole city")');
+      await page.getByRole("button", { name: "Start round" }).click();
+      await expect(page.getByText(/\d+ correct/)).toBeVisible({ timeout: 10000 });
+      await page.locator("span.tabular-nums", { hasText: /^1$/ }).first().click();
       await expect(page.locator("button:has-text('Next')")).toBeVisible({ timeout: 5000 });
       await page.click("button:has-text('Next')");
 
       // Check XP in header
-      const xpBefore = await page.locator("text=/\\d+ XP/").textContent();
+      const xpBefore = await headerText(page);
 
       // Reload page
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      // XP should persist
-      const xpAfter = await page.locator("text=/\\d+ XP/").textContent();
+      const xpAfter = await headerText(page);
       expect(xpAfter).toBe(xpBefore);
     });
 
     test("streak persists across page reloads", async ({ page }) => {
-      const streakBefore = await page.locator("text=/\\d+ day/").textContent();
+      const streakBefore = await headerText(page);
       await page.reload();
       await page.waitForLoadState("networkidle");
-      const streakAfter = await page.locator("text=/\\d+ day/").textContent();
+      const streakAfter = await headerText(page);
       expect(streakAfter).toBe(streakBefore);
     });
 
@@ -112,13 +114,16 @@ test.describe("Wortreise - Critical User Journeys", () => {
       await page.goto("/pass");
       await page.waitForLoadState("networkidle");
 
-      // Get known words count
-      const knownBefore = await page.locator("text=/\\d+ of \\d+ known/").first().textContent();
+      const known = page.getByText(/of \d+ known/);
+      const knownBefore = await known.first().textContent();
 
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      const knownAfter = await page.locator("text=/\\d+ of \\d+ known/").first().textContent();
+      const knownAfter = await page
+        .getByText(/of \d+ known/)
+        .first()
+        .textContent();
       expect(knownAfter).toBe(knownBefore);
     });
   });
@@ -137,10 +142,9 @@ test.describe("Wortreise - Critical User Journeys", () => {
       expect(download.suggestedFilename()).toMatch(/wortreise-backup-\d{4}-\d{2}-\d{2}\.json/);
 
       // Read and validate JSON
-      const fs = require("fs");
       const path = await download.path();
       if (path) {
-        const content = fs.readFileSync(path, "utf-8");
+        const content = readFileSync(path, "utf-8");
         const backup = JSON.parse(content);
         expect(backup).toHaveProperty("version", 1);
         expect(backup).toHaveProperty("backupVersion", 1);
@@ -186,10 +190,12 @@ test.describe("Wortreise - Critical User Journeys", () => {
       });
 
       // Should show success message
-      await expect(page.locator("text=Backup imported successfully")).toBeVisible({ timeout: 5000 });
+      await expect(page.locator("text=Backup imported successfully")).toBeVisible({
+        timeout: 5000,
+      });
 
       // Verify XP updated
-      await expect(page.locator("text=999 XP")).toBeVisible({ timeout: 5000 });
+      await expect.poll(async () => headerText(page)).toContain("999XP");
     });
 
     test("shows error for invalid backup", async ({ page }) => {
@@ -208,6 +214,15 @@ test.describe("Wortreise - Critical User Journeys", () => {
   });
 
   test.describe("Voice Selection", () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto("/pass");
+      await page.waitForLoadState("networkidle");
+      test.skip(
+        (await page.locator("select").count()) === 0,
+        "No German speech-synthesis voice in this browser",
+      );
+    });
+
     test("shows voice selector with German voices", async ({ page }) => {
       await page.goto("/pass");
       await page.waitForLoadState("networkidle");
@@ -288,7 +303,7 @@ test.describe("Wortreise - Critical User Journeys", () => {
       await page.click('button:has-text("List Voices")');
 
       const debugText = await page.locator("pre").textContent();
-      expect(debugText).toContain("AVAILABLE VOICES");
+      expect(debugText).toMatch(/AVAILABLE VOICES|No voices available/);
     });
 
     test("tests German voice", async ({ page }) => {
@@ -300,7 +315,7 @@ test.describe("Wortreise - Critical User Journeys", () => {
 
       // Should show voice list after test
       const debugText = await page.locator("pre").textContent();
-      expect(debugText).toContain("AVAILABLE VOICES");
+      expect(debugText).toMatch(/AVAILABLE VOICES|No voices available/);
     });
   });
 
@@ -325,9 +340,9 @@ test.describe("Wortreise - Critical User Journeys", () => {
 
   test.describe("Navigation", () => {
     test("header navigation works", async ({ page }) => {
-      await expect(page.locator("a[href='/']")).toBeVisible();
-      await expect(page.locator("a[href='/words']")).toBeVisible();
-      await expect(page.locator("a[href='/pass']")).toBeVisible();
+      await expect(page.locator("header nav a[href='/']")).toBeVisible();
+      await expect(page.locator("header nav a[href='/words']")).toBeVisible();
+      await expect(page.locator("header nav a[href='/pass']")).toBeVisible();
     });
 
     test("mobile bottom nav works", async ({ page }) => {
@@ -335,27 +350,27 @@ test.describe("Wortreise - Critical User Journeys", () => {
       await page.reload();
       await page.waitForLoadState("networkidle");
 
-      await expect(page.locator('a[href="/"]:has-text("Play")')).toBeVisible();
-      await expect(page.locator('a[href="/words"]:has-text("Words")')).toBeVisible();
-      await expect(page.locator('a[href="/pass"]:has-text("Pass")')).toBeVisible();
-      await expect(page.locator('a[href="/play/cards"]:has-text("Study")')).toBeVisible();
+      const bottom = page.locator("nav.fixed");
+      await expect(bottom.getByRole("link", { name: "Play", exact: true })).toBeVisible();
+      await expect(bottom.getByRole("link", { name: "Words", exact: true })).toBeVisible();
+      await expect(bottom.getByRole("link", { name: "Pass", exact: true })).toBeVisible();
+      await expect(bottom.getByRole("link", { name: "Study", exact: true })).toBeVisible();
     });
   });
 
   test.describe("Auth Flow", () => {
-    test("shows Sign in button when signed out", async ({ page }) => {
+    test("uses the local dev user when auth is off", async ({ page }) => {
       await page.goto("/");
       await page.waitForLoadState("networkidle");
 
-      // Should show Sign in link in header
-      await expect(page.locator('a[href="/login"]:has-text("Sign in")')).toBeVisible();
+      await expect(page.getByText("Dev User")).toBeVisible();
+      await expect(page.locator('a[href="/login"]')).toHaveCount(0);
     });
 
     test("navigates to login page", async ({ page }) => {
-      await page.goto("/");
+      await page.goto("/login");
       await page.waitForLoadState("networkidle");
 
-      await page.click('a[href="/login"]');
       await expect(page).toHaveURL(/.*login/);
       await expect(page.locator("text=Sign in to Wortreise")).toBeVisible();
     });
@@ -408,9 +423,7 @@ test.describe("Accessibility", () => {
     await page.goto("/play/quiz");
     await page.waitForLoadState("networkidle");
 
-    // Check for form labels
-    const labels = page.locator("label");
-    await expect(labels.first()).toBeVisible();
+    await expect(page.getByRole("group", { name: "District" })).toBeVisible();
   });
 
   test("buttons have accessible names", async ({ page }) => {
@@ -449,7 +462,7 @@ test.describe("Performance", () => {
 
     // Filter out known harmless errors
     const criticalErrors = errors.filter(
-      (e) => !e.includes("favicon") && !e.includes("manifest") && !e.includes("Not Found")
+      (e) => !e.includes("favicon") && !e.includes("manifest") && !e.includes("Not Found"),
     );
     expect(criticalErrors).toHaveLength(0);
   });

@@ -2,13 +2,7 @@ import { Volume2 } from "lucide-react";
 import { speakGerman, unlockSpeech } from "@/lib/speech";
 import { cn } from "@/lib/utils";
 
-export function SpeakButton({
-  text,
-  className,
-}: {
-  text: string;
-  className?: string;
-}) {
+export function SpeakButton({ text, className }: { text: string; className?: string }) {
   return (
     <button
       type="button"
