@@ -82,12 +82,13 @@ jobs:
         if: steps.vercel.outputs.enabled == 'true'
         with:
           script: |
+            const environment = "${{ github.event.inputs.environment }}" || "production";
             await github.rest.repos.createDeployment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               ref: context.sha,
-              environment: '${{ github.event.inputs.environment || "production" }}',
-              description: 'Deployed via GitHub Actions',
+              environment,
+              description: "Deployed via GitHub Actions",
               auto_merge: false,
               required_contexts: []
             });
