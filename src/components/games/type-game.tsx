@@ -163,7 +163,10 @@ export function TypeGame() {
               <span className="font-medium">{word.display}</span>
               <span className="text-muted"> — {word.en}</span>
             </p>
-            <p className="mt-1 text-sm text-muted">{word.example}</p>
+            <div className="mt-1 flex items-start gap-2">
+              <p className="min-w-0 flex-1 text-sm text-muted">{word.example}</p>
+              <SpeakButton text={word.example} className="size-9 shrink-0" />
+            </div>
           </div>
         )}
         <Button className="mt-4 w-full" type="submit">

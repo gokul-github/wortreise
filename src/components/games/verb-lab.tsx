@@ -166,7 +166,10 @@ export function VerbLab() {
             </tbody>
           </table>
           <div className="border-t border-border p-4">
-            <p className="text-sm text-muted">{q.word.example}</p>
+            <div className="flex items-start gap-2">
+              <p className="min-w-0 flex-1 text-sm text-muted">{q.word.example}</p>
+              <SpeakButton text={q.word.example} className="size-9 shrink-0" />
+            </div>
             <p className="text-sm text-subtle">{q.word.exampleEn}</p>
             <Button
               className="mt-3"

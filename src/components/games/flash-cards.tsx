@@ -115,7 +115,10 @@ export function FlashCards() {
               {word.feminine ? (
                 <p className="text-sm text-muted">Feminine: {word.feminine}</p>
               ) : null}
-              <p className="mt-4 text-fg">{word.example}</p>
+              <div className="mt-4 flex items-start gap-2">
+                <p className="min-w-0 flex-1 text-fg">{word.example}</p>
+                <SpeakButton text={word.example} className="size-9 shrink-0" />
+              </div>
               <p className="mt-1 text-sm text-muted">{word.exampleEn}</p>
               {word.verb ? (
                 <ul className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">

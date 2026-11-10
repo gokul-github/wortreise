@@ -172,7 +172,10 @@ function WordRow({
         <div className="border-t border-border bg-bg/50 px-4 py-4">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-sm text-fg">{word.example}</p>
+              <div className="flex items-start gap-2">
+                <p className="min-w-0 flex-1 text-sm text-fg">{word.example}</p>
+                <SpeakButton text={word.example} className="size-9 shrink-0" />
+              </div>
               <p className="mt-1 text-sm text-muted">{word.exampleEn}</p>
               {word.plural ? (
                 <p className="mt-2 text-sm text-muted">Plural: {word.plural}</p>

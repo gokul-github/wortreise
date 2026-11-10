@@ -193,7 +193,10 @@ export function QuizGame() {
             <span className="font-medium">{q.word.display}</span>
             <span className="text-muted"> — {q.word.en}</span>
           </p>
-          <p className="mt-2 text-sm text-muted">{q.word.example}</p>
+          <div className="mt-2 flex items-start gap-2">
+            <p className="min-w-0 flex-1 text-sm text-muted">{q.word.example}</p>
+            <SpeakButton text={q.word.example} className="size-9 shrink-0" />
+          </div>
           <p className="text-sm text-subtle">{q.word.exampleEn}</p>
           <Button className="mt-4 w-full sm:w-auto" onClick={next}>
             {idx + 1 === round.length ? "See result" : "Next"}
