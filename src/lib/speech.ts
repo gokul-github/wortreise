@@ -1,9 +1,22 @@
+import { Capacitor, registerPlugin } from "@capacitor/core";
+
 let unlocked = false;
 let voicesLoaded = false;
 let voicesResolve: (() => void) | null = null;
 const voicesPromise = new Promise<void>((resolve) => {
   voicesResolve = resolve;
 });
+
+type TtsPlugin = {
+  speak(options: { text: string }): Promise<void>;
+  stop(): Promise<void>;
+};
+
+const Tts = registerPlugin<TtsPlugin>("Tts");
+
+function useNativeTts() {
+  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+}
 
 if (typeof window !== "undefined" && window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
@@ -18,6 +31,10 @@ const STORAGE_KEY = "wortreise-voice-preference";
 
 export function unlockSpeech() {
   unlocked = true;
+  if (useNativeTts()) {
+    void Tts.stop().catch(() => undefined);
+    return;
+  }
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   window.speechSynthesis.cancel();
 }
@@ -66,6 +83,12 @@ export function listVoices() {
 }
 
 export async function speakGerman(text: string) {
+  if (useNativeTts()) {
+    await Tts.stop().catch(() => undefined);
+    await Tts.speak({ text });
+    unlocked = true;
+    return;
+  }
   if (typeof window === "undefined" || !window.speechSynthesis) return;
   const synth = window.speechSynthesis;
 
