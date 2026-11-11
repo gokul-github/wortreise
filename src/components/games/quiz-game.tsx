@@ -11,7 +11,7 @@ import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/store/progress";
 
-export function QuizGame() {
+export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "all" }) {
   const navigate = useNavigate();
   const mastery = useProgress((s) => s.mastery);
   const direction = useProgress((s) => s.direction);
@@ -19,7 +19,7 @@ export function QuizGame() {
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
 
-  const [topic, setTopic] = useState<TopicId | "all">("all");
+  const [topic, setTopic] = useState<TopicId | "all">(initialTopic);
   const [count, setCount] = useState(10);
   const [round, setRound] = useState<QuizQuestion[] | null>(null);
   const [idx, setIdx] = useState(0);

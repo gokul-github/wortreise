@@ -23,6 +23,7 @@ import { Pass } from "@/components/pass";
 import { Shell } from "@/components/shell";
 import { SignInButtons } from "@/lib/auth/gates";
 import { AuthProvider } from "@/lib/auth/provider";
+import { topicFromSearch, type TopicId } from "@/data/types";
 import "./app.css";
 
 const MODES = ["quiz", "speed", "type", "verbs", "match", "cards"] as const;
@@ -110,12 +111,17 @@ const loginRoute = createRoute({
 const playRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/play/$mode",
+  validateSearch: (search: Record<string, unknown>): { topic?: TopicId } => {
+    const topic = topicFromSearch(search.topic);
+    return topic ? { topic } : {};
+  },
   component: function PlayScreen() {
     const { mode } = playRoute.useParams();
+    const { topic } = playRoute.useSearch();
     return (
       <Shell>
         <BackLink />
-        {mode === "quiz" ? <QuizGame /> : null}
+        {mode === "quiz" ? <QuizGame initialTopic={topic} /> : null}
         {mode === "speed" ? <SpeedGame /> : null}
         {mode === "type" ? <TypeGame /> : null}
         {mode === "verbs" ? <VerbLab /> : null}

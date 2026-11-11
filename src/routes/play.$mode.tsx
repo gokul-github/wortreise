@@ -7,11 +7,19 @@ import { SpeedGame } from "@/components/games/speed-game";
 import { TypeGame } from "@/components/games/type-game";
 import { VerbLab } from "@/components/games/verb-lab";
 import { Shell } from "@/components/shell";
+import { topicFromSearch, type TopicId } from "@/data/types";
 
-export const Route = createFileRoute("/play/$mode")({ component: PlayMode });
+export const Route = createFileRoute("/play/$mode")({
+  validateSearch: (search: Record<string, unknown>): { topic?: TopicId } => {
+    const topic = topicFromSearch(search.topic);
+    return topic ? { topic } : {};
+  },
+  component: PlayMode,
+});
 
 function PlayMode() {
   const { mode } = Route.useParams();
+  const { topic } = Route.useSearch();
 
   return (
     <Shell>
@@ -22,7 +30,7 @@ function PlayMode() {
         <ArrowLeft className="size-4" />
         Station hall
       </Link>
-      {mode === "quiz" ? <QuizGame /> : null}
+      {mode === "quiz" ? <QuizGame initialTopic={topic} /> : null}
       {mode === "speed" ? <SpeedGame /> : null}
       {mode === "type" ? <TypeGame /> : null}
       {mode === "verbs" ? <VerbLab /> : null}

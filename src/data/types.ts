@@ -79,3 +79,10 @@ export const TOPICS: {
   { id: "freizeit", de: "Freizeit", en: "Leisure", blurb: "Sport, hobbies, media." },
   { id: "alltag", de: "Alltag", en: "Everyday", blurb: "Little words that glue speech." },
 ];
+
+const TOPIC_IDS = new Set<string>(TOPICS.map((t) => t.id));
+
+/** District id from a `?topic=` link, or undefined when it is missing or unknown. */
+export function topicFromSearch(value: unknown): TopicId | undefined {
+  return typeof value === "string" && TOPIC_IDS.has(value) ? (value as TopicId) : undefined;
+}

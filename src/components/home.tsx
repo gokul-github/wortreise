@@ -142,6 +142,7 @@ export function Home() {
                 key={t.id}
                 to="/play/$mode"
                 params={{ mode: "quiz" }}
+                search={{ topic: t.id }}
                 className="rounded-[20px] border border-border bg-surface p-4 no-underline"
               >
                 <div className="flex items-center justify-between">
