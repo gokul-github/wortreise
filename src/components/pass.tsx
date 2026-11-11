@@ -57,11 +57,16 @@ export function Pass() {
   );
   const [debugInfo, setDebugInfo] = useState<string>("Click 'Debug' to inspect");
   const [voiceSelectorOpen, setVoiceSelectorOpen] = useState(false);
+  const [isClient, setIsClient] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const germanVoices = getGermanVoices();
-  const savedVoice = loadVoicePreference();
+  const germanVoices = isClient ? getGermanVoices() : [];
+  const savedVoice = isClient ? loadVoicePreference() : null;
   const currentVoice = germanVoices.find((v) => v.name === savedVoice) || germanVoices[0];
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleVoiceChange = (voiceName: string) => {
     saveVoicePreference(voiceName);
