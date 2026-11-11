@@ -6,7 +6,7 @@ import { SpeakButton } from "@/components/speak-button";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { TopicId } from "@/data/types";
-import { buildQuiz, type QuizQuestion } from "@/lib/quiz";
+import { buildQuiz, type QuizQuestion, getWordBackgroundClass, getWordTextClass } from "@/lib/quiz";
 import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/store/progress";
@@ -142,17 +142,21 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
         className={cn(
           "mt-8 rounded-[28px] border border-border bg-surface p-6 shadow-ticket sm:p-8",
           shake && "shake-x",
+          getWordBackgroundClass(q.word),
         )}
       >
         <p className="text-xs uppercase tracking-[0.18em] text-muted">
           {q.kind === "article"
             ? "Which article?"
             : q.kind === "de-en"
-              ? "What does this mean?"
-              : "How do you say this?"}
+            ? "What does this mean?"
+            : "How do you say this?"}
         </p>
         <div className="mt-4 flex items-start justify-between gap-3">
-          <h2 className="font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl">
+          <h2 className={cn(
+            "font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl",
+            getWordTextClass(q.word),
+          )}>
             {q.prompt}
           </h2>
           {q.promptLang === "de" ? <SpeakButton text={q.word.lemma} /> : null}
@@ -193,8 +197,11 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
       </div>
 
       {picked ? (
-        <div className="mt-5 rounded-[20px] border border-border bg-surface p-4">
-          <p className="text-sm text-fg">
+        <div className={cn(
+          "mt-5 rounded-[20px] border border-border bg-surface p-4",
+          getWordBackgroundClass(q.word),
+        )}>
+          <p className={cn("text-sm text-fg", getWordTextClass(q.word))}>
             <span className="font-medium">{q.word.display}</span>
             <span className="text-muted"> — {q.word.en}</span>
           </p>

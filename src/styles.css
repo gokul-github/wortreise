@@ -17,6 +17,7 @@
   --color-der: #2c4f7c;
   --color-die: #8a3344;
   --color-das: #2f6b4a;
+  --color-verb: #7a3f6b;
   --color-success: #2a6b4a;
   --color-danger: #8f2d2d;
   --color-warn: #8a5a20;
@@ -164,4 +165,46 @@
 
 .shake-x {
   animation: shake-x 280ms ease-in-out;
+}
+
+/* Article/Verb background colors for quiz */
+.bg-article-der {
+  background-color: var(--color-der);
+}
+.bg-article-die {
+  background-color: var(--color-die);
+}
+.bg-article-das {
+  background-color: var(--color-das);
+}
+.bg-verb {
+  background-color: var(--color-verb);
+}
+
+/* Light variants for subtle backgrounds */
+.bg-article-der-light {
+  background-color: color-mix(in oklab, var(--color-der) 15%, transparent);
+}
+.bg-article-die-light {
+  background-color: color-mix(in oklab, var(--color-die) 15%, transparent);
+}
+.bg-article-das-light {
+  background-color: color-mix(in oklab, var(--color-das) 15%, transparent);
+}
+.bg-verb-light {
+  background-color: color-mix(in oklab, var(--color-verb) 15%, transparent);
+}
+
+/* Text color variants */
+.text-article-der {
+  color: var(--color-der);
+}
+.text-article-die {
+  color: var(--color-die);
+}
+.text-article-das {
+  color: var(--color-das);
+}
+.text-verb {
+  color: var(--color-verb);
 }

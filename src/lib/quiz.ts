@@ -22,6 +22,24 @@ export type QuizQuestion = {
   answer: string;
 };
 
+/** Returns the background CSS class for a word based on its article or part of speech. */
+export function getWordBackgroundClass(word: Word): string {
+  if (word.pos === "verb" && word.verb) return "bg-verb-light";
+  if (word.article === "der") return "bg-article-der-light";
+  if (word.article === "die") return "bg-article-die-light";
+  if (word.article === "das") return "bg-article-das-light";
+  return "";
+}
+
+/** Returns the text color CSS class for a word based on its article or part of speech. */
+export function getWordTextClass(word: Word): string {
+  if (word.pos === "verb" && word.verb) return "text-verb";
+  if (word.article === "der") return "text-article-der";
+  if (word.article === "die") return "text-article-die";
+  if (word.article === "das") return "text-article-das";
+  return "";
+}
+
 export type VerbQuestion = {
   id: string;
   word: Word;

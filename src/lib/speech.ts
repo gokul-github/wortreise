@@ -1,8 +1,8 @@
 // Capacitor imports are client-side only to avoid SSR issues
 // Use dynamic import that Vite won't statically analyze
-let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | null = null;
-let registerPlugin: (name: string) => { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | null = null;
-let Tts: { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | null = null;
+let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | undefined;
+let registerPlugin: ((name: string) => { speak(options: { text: string }): Promise<void>; stop(): Promise<void> }) | undefined;
+let Tts: { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | undefined;
 
 async function initCapacitor() {
   if (typeof window !== "undefined" && !Capacitor) {
@@ -10,7 +10,7 @@ async function initCapacitor() {
     const mod = await new Function("return import('@capacitor/core')")();
     Capacitor = mod.Capacitor;
     registerPlugin = mod.registerPlugin;
-    Tts = registerPlugin("Tts");
+    Tts = registerPlugin!("Tts");
   }
 }
 
@@ -40,7 +40,7 @@ export async function unlockSpeech() {
   await initCapacitor();
   unlocked = true;
   if (androidTts()) {
-    void Tts.stop().catch(() => undefined);
+    void Tts!.stop().catch(() => undefined);
     return;
   }
   if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -97,8 +97,8 @@ export function listVoices() {
 export async function speakGerman(text: string) {
   await initCapacitor();
   if (androidTts()) {
-    await Tts.stop().catch(() => undefined);
-    await Tts.speak({ text });
+    await Tts!.stop().catch(() => undefined);
+    await Tts!.speak({ text });
     unlocked = true;
     return;
   }

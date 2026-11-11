@@ -1,15 +1,15 @@
 // Capacitor imports are client-side only to avoid SSR issues
 // Use dynamic import that Vite won't statically analyze
-let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | null = null;
-let registerPlugin: (name: string) => { save(options: { filename: string; text: string }): Promise<{ cancelled?: boolean; saved?: boolean }>; pick(): Promise<{ cancelled?: boolean; text?: string }> } | null = null;
-let BackupFile: { save(options: { filename: string; text: string }): Promise<{ cancelled?: boolean; saved?: boolean }>; pick(): Promise<{ cancelled?: boolean; text?: string }> } | null = null;
+let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | undefined;
+let registerPlugin: ((name: string) => { save(options: { filename: string; text: string }): Promise<{ cancelled?: boolean; saved?: boolean }>; pick(): Promise<{ cancelled?: boolean; text?: string }> }) | undefined;
+let BackupFile: { save(options: { filename: string; text: string }): Promise<{ cancelled?: boolean; saved?: boolean }>; pick(): Promise<{ cancelled?: boolean; text?: string }> } | undefined;
 
 async function initCapacitor() {
   if (typeof window !== "undefined" && !Capacitor) {
     const mod = await new Function("return import('@capacitor/core')")();
     Capacitor = mod.Capacitor;
     registerPlugin = mod.registerPlugin;
-    BackupFile = registerPlugin("BackupFile");
+    BackupFile = registerPlugin!("BackupFile");
   }
 }
 

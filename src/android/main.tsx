@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+// @ts-ignore - Android-only import, not used in web build
 import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import {
   Outlet,
