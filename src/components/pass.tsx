@@ -10,6 +10,7 @@ import {
   saveVoicePreference,
   loadVoicePreference,
 } from "@/lib/speech";
+import { androidBackup, exportBackupFile, pickBackupText } from "@/lib/backup-file";
 
 /**
  * Each district gets its own colour so the pass reads as a map rather than a
@@ -68,17 +69,41 @@ export function Pass() {
     setDebugInfo(`Voice preference saved: ${voiceName}\nClick "Test German" to hear it.`);
   };
 
-  const handleExport = () => {
+  const handleExport = async () => {
     const backup = useProgress.getState().exportBackup();
-    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `wortreise-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    try {
+      const result = await exportBackupFile(backup);
+      if (result.cancelled) return;
+      setImportStatus({
+        success: true,
+        message: result.native
+          ? "Backup saved. Import this same JSON file on the website, or on another phone."
+          : "Backup downloaded. Import this same JSON file in the Android app, or in another browser.",
+      });
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: error instanceof Error ? error.message : "Could not export the backup",
+      });
+    }
+  };
+
+  const applyBackupText = (text: string) => {
+    try {
+      const backup = JSON.parse(text.replace(/^\uFEFF/, ""));
+      const result = useProgress.getState().importBackup(backup);
+      setImportStatus({
+        success: result.success,
+        message: result.success
+          ? "Backup imported successfully!"
+          : `Import failed: ${result.error}`,
+      });
+      if (result.success) {
+        useProgress.getState().hydrate();
+      }
+    } catch {
+      setImportStatus({ success: false, message: "Invalid backup file (not valid JSON)" });
+    }
   };
 
   const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -86,24 +111,27 @@ export function Pass() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = (event) => {
-      try {
-        const backup = JSON.parse(event.target?.result as string);
-        const result = useProgress.getState().importBackup(backup);
-        setImportStatus({
-          success: result.success,
-          message: result.success
-            ? "Backup imported successfully!"
-            : `Import failed: ${result.error}`,
-        });
-        if (result.success) {
-          useProgress.getState().hydrate();
-        }
-      } catch {
-        setImportStatus({ success: false, message: "Invalid backup file (not valid JSON)" });
-      }
+      applyBackupText(String(event.target?.result ?? ""));
       e.target.value = "";
     };
     reader.readAsText(file);
+  };
+
+  const handleImportClick = async () => {
+    if (!androidBackup()) {
+      fileInputRef.current?.click();
+      return;
+    }
+    try {
+      const text = await pickBackupText();
+      if (text == null) return;
+      applyBackupText(text);
+    } catch (error) {
+      setImportStatus({
+        success: false,
+        message: error instanceof Error ? error.message : "Could not read the backup",
+      });
+    }
   };
 
   const handleDebug = () => {
@@ -230,10 +258,11 @@ export function Pass() {
       <div className="mt-6 border-t border-border pt-6">
         <p className="text-xs uppercase tracking-[0.18em] text-muted">Backup & Restore</p>
         <p className="mt-2 text-sm text-muted">
-          Export your progress to a file, then import it on another device or browser.
+          One JSON file works on this phone and on the website. Export it here, then import it on
+          the other.
         </p>
         <div className="mt-4 flex flex-col gap-2 sm:flex-row">
-          <Button variant="outline" onClick={handleExport} className="flex-1">
+          <Button variant="outline" onClick={() => void handleExport()} className="flex-1">
             <Download className="mr-2 size-4" />
             Export Backup
           </Button>
@@ -244,7 +273,7 @@ export function Pass() {
               type="button"
               onClick={(e) => {
                 e.preventDefault();
-                fileInputRef.current?.click();
+                void handleImportClick();
               }}
             >
               <Upload className="mr-2 size-4" />
@@ -253,7 +282,7 @@ export function Pass() {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".json"
+              accept=".json,application/json,text/plain"
               className="sr-only"
               onChange={handleImport}
             />
