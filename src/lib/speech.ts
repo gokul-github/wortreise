@@ -1,18 +1,4 @@
-// Capacitor imports are client-side only to avoid SSR issues
-// Use dynamic import that Vite won't statically analyze
-let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | undefined;
-let registerPlugin: ((name: string) => { speak(options: { text: string }): Promise<void>; stop(): Promise<void> }) | undefined;
-let Tts: { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | undefined;
-
-async function initCapacitor() {
-  if (typeof window !== "undefined" && !Capacitor) {
-    // Use eval to completely avoid Vite's static analysis
-    const mod = await new Function("return import('@capacitor/core')")();
-    Capacitor = mod.Capacitor;
-    registerPlugin = mod.registerPlugin;
-    Tts = registerPlugin!("Tts");
-  }
-}
+import { androidNative, androidPlugin } from "./native-bridge.ts";
 
 let unlocked = false;
 let voicesLoaded = false;
@@ -20,10 +6,6 @@ let voicesResolve: (() => void) | null = null;
 const voicesPromise = new Promise<void>((resolve) => {
   voicesResolve = resolve;
 });
-
-function androidTts() {
-  return typeof window !== "undefined" && Capacitor?.isNativePlatform() && Capacitor.getPlatform() === "android";
-}
 
 if (typeof window !== "undefined" && window.speechSynthesis) {
   window.speechSynthesis.onvoiceschanged = () => {
@@ -37,10 +19,9 @@ if (typeof window !== "undefined" && window.speechSynthesis) {
 const STORAGE_KEY = "wortreise-voice-preference";
 
 export async function unlockSpeech() {
-  await initCapacitor();
   unlocked = true;
-  if (androidTts()) {
-    void Tts!.stop().catch(() => undefined);
+  if (androidNative()) {
+    void androidPlugin("Tts", "stop").catch(() => undefined);
     return;
   }
   if (typeof window === "undefined" || !window.speechSynthesis) return;
@@ -95,10 +76,9 @@ export function listVoices() {
 }
 
 export async function speakGerman(text: string) {
-  await initCapacitor();
-  if (androidTts()) {
-    await Tts!.stop().catch(() => undefined);
-    await Tts!.speak({ text });
+  if (androidNative()) {
+    await androidPlugin("Tts", "stop").catch(() => undefined);
+    await androidPlugin("Tts", "speak", { text });
     unlocked = true;
     return;
   }
