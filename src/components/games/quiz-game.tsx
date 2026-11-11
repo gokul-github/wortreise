@@ -7,9 +7,28 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { TopicId } from "@/data/types";
 import { buildQuiz, type QuizQuestion, getWordBackgroundClass, getWordTextClass } from "@/lib/quiz";
+import { speakGerman, unlockSpeech } from "@/lib/speech";
 import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
 import { useProgress } from "@/store/progress";
+
+/** German already on the card. English prompts stay quiet so the answer is not spoken early. */
+function promptSpeech(q: QuizQuestion): string | null {
+  if (q.promptLang !== "de") return null;
+  const text = q.prompt.trim();
+  return text.length > 0 ? text : null;
+}
+
+/** Example sentence after an answer. English prompts also say the German word, which was hidden. */
+function answerSpeech(q: QuizQuestion): string | null {
+  const example = q.word.example.trim();
+  if (q.promptLang === "en") {
+    const word = q.word.display.trim();
+    if (word && example) return `${word}. ${example}`;
+    return word || example || null;
+  }
+  return example.length > 0 ? example : null;
+}
 
 export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "all" }) {
   const navigate = useNavigate();
@@ -31,6 +50,11 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
   const q = round?.[idx];
   const done = round && idx >= round.length;
 
+  function say(text: string | null) {
+    if (!sound || !text) return;
+    void speakGerman(text).catch(() => undefined);
+  }
+
   function start() {
     unlockAudio();
     const qs = buildQuiz(topic, count, direction, mastery);
@@ -39,6 +63,8 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
     setPicked(null);
     setCorrectCount(0);
     setXpGain(0);
+    const first = qs[0];
+    if (first) say(promptSpeech(first));
   }
 
   function choose(opt: string) {
@@ -55,12 +81,24 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
       setShake(true);
       setTimeout(() => setShake(false), 300);
     }
+    say(answerSpeech(q));
   }
 
   function next() {
+    const upcoming = round?.[idx + 1];
     setPicked(null);
     setIdx((i) => i + 1);
+    if (!upcoming) return;
+    const text = promptSpeech(upcoming);
+    if (sound && text) say(text);
+    else void unlockSpeech();
   }
+
+  useEffect(() => {
+    return () => {
+      void unlockSpeech();
+    };
+  }, []);
 
   useEffect(() => {
     if (!q || picked) return;
@@ -76,7 +114,7 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
     return (
       <GameSetup
         title="Quiz Rally"
-        blurb="Four choices. German to English, English to German, and articles for nouns. Keys 1–4 work on a keyboard."
+        blurb="Four choices. German to English, English to German, and articles for nouns. German words are spoken aloud, and the example sentence plays after you answer. Keys 1–4 work on a keyboard."
         topic={topic}
         onTopic={setTopic}
         count={count}
@@ -149,17 +187,19 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
           {q.kind === "article"
             ? "Which article?"
             : q.kind === "de-en"
-            ? "What does this mean?"
-            : "How do you say this?"}
+              ? "What does this mean?"
+              : "How do you say this?"}
         </p>
         <div className="mt-4 flex items-start justify-between gap-3">
-          <h2 className={cn(
-            "font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl",
-            getWordTextClass(q.word),
-          )}>
+          <h2
+            className={cn(
+              "font-display text-4xl font-semibold leading-tight tracking-tight sm:text-5xl",
+              getWordTextClass(q.word),
+            )}
+          >
             {q.prompt}
           </h2>
-          {q.promptLang === "de" ? <SpeakButton text={q.word.lemma} /> : null}
+          {q.promptLang === "de" ? <SpeakButton text={q.prompt} /> : null}
         </div>
         {q.word.article && q.kind !== "article" ? (
           <div className="mt-3">
@@ -197,10 +237,12 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
       </div>
 
       {picked ? (
-        <div className={cn(
-          "mt-5 rounded-[20px] border border-border bg-surface p-4",
-          getWordBackgroundClass(q.word),
-        )}>
+        <div
+          className={cn(
+            "mt-5 rounded-[20px] border border-border bg-surface p-4",
+            getWordBackgroundClass(q.word),
+          )}
+        >
           <p className={cn("text-sm text-fg", getWordTextClass(q.word))}>
             <span className="font-medium">{q.word.display}</span>
             <span className="text-muted"> — {q.word.en}</span>
