@@ -1,4 +1,18 @@
-import { Capacitor, registerPlugin } from "@capacitor/core";
+// Capacitor imports are client-side only to avoid SSR issues
+// Use dynamic import that Vite won't statically analyze
+let Capacitor: { isNativePlatform(): boolean; getPlatform(): string } | null = null;
+let registerPlugin: (name: string) => { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | null = null;
+let Tts: { speak(options: { text: string }): Promise<void>; stop(): Promise<void> } | null = null;
+
+async function initCapacitor() {
+  if (typeof window !== "undefined" && !Capacitor) {
+    // Use eval to completely avoid Vite's static analysis
+    const mod = await new Function("return import('@capacitor/core')")();
+    Capacitor = mod.Capacitor;
+    registerPlugin = mod.registerPlugin;
+    Tts = registerPlugin("Tts");
+  }
+}
 
 let unlocked = false;
 let voicesLoaded = false;
@@ -7,15 +21,8 @@ const voicesPromise = new Promise<void>((resolve) => {
   voicesResolve = resolve;
 });
 
-type TtsPlugin = {
-  speak(options: { text: string }): Promise<void>;
-  stop(): Promise<void>;
-};
-
-const Tts = registerPlugin<TtsPlugin>("Tts");
-
 function androidTts() {
-  return Capacitor.isNativePlatform() && Capacitor.getPlatform() === "android";
+  return typeof window !== "undefined" && Capacitor?.isNativePlatform() && Capacitor.getPlatform() === "android";
 }
 
 if (typeof window !== "undefined" && window.speechSynthesis) {
@@ -29,7 +36,8 @@ if (typeof window !== "undefined" && window.speechSynthesis) {
 
 const STORAGE_KEY = "wortreise-voice-preference";
 
-export function unlockSpeech() {
+export async function unlockSpeech() {
+  await initCapacitor();
   unlocked = true;
   if (androidTts()) {
     void Tts.stop().catch(() => undefined);
@@ -87,6 +95,7 @@ export function listVoices() {
 }
 
 export async function speakGerman(text: string) {
+  await initCapacitor();
   if (androidTts()) {
     await Tts.stop().catch(() => undefined);
     await Tts.speak({ text });
