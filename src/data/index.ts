@@ -91,3 +91,7 @@ export const STATS = {
   verbs: VERBS.length,
   nouns: NOUNS.length,
 };
+
+export function getTopicWordCount(topic: TopicId | "all"): number {
+  return wordsByTopic(topic).length;
+}

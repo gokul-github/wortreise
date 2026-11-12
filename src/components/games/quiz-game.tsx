@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { TopicId } from "@/data/types";
 import { buildQuiz, type QuizQuestion, getWordBackgroundClass, getWordTextClass } from "@/lib/quiz";
+import { wordsByTopic, getTopicWordCount } from "@/data";
 import { speakGerman, unlockSpeech } from "@/lib/speech";
 import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
@@ -111,6 +112,9 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
   });
 
   if (!round) {
+    const topicTotal = topic === "all" ? 0 : getTopicWordCount(topic);
+    const dynamicCounts = topicTotal > 0 ? [10, 20, 30, topicTotal] : [10, 20, 30];
+
     return (
       <GameSetup
         title="Quiz Rally"
@@ -119,6 +123,7 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
         onTopic={setTopic}
         count={count}
         onCount={setCount}
+        counts={dynamicCounts}
         extra={
           <fieldset className="mt-6">
             <legend className="text-sm font-medium text-fg">Direction</legend>
