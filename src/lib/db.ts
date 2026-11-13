@@ -68,8 +68,8 @@ function toSql(run: Run): Sql {
     ...values: unknown[]
   ): Promise<T[]> => {
     // Rebuild with $1, $2, … placeholders so values stay parameterized.
-    let text = strings[0];
-    for (let i = 0; i < values.length; i += 1) text += `$${i + 1}${strings[i + 1]}`;
+    let text = strings[0] ?? "";
+    for (let i = 0; i < values.length; i += 1) text += `$${i + 1}${strings[i + 1] ?? ""}`;
     return run<T>(text, values);
   }) as unknown as Sql;
   sql.query = <T = Record<string, unknown>>(text: string, params: unknown[] = []) =>
@@ -97,13 +97,25 @@ function createNeonSql(): Promise<Sql> {
   return globalRef.__pgSqlPromise__;
 }
 
+async function pgliteDataDir(): Promise<string> {
+  // Vercel’s filesystem is read-only outside /tmp, and this process is ephemeral
+  // there anyway. Persist only for the local preview, where a restart used to
+  // wipe the in-memory database.
+  if (process.env.VERCEL) return "memory://";
+  const { mkdirSync } = await import("node:fs");
+  const { join } = await import("node:path");
+  const dir = join(process.cwd(), ".data", "pglite");
+  mkdirSync(dir, { recursive: true });
+  return dir;
+}
+
 async function createPgliteSql(): Promise<Sql> {
-  // Embedded Postgres, imported on demand so it never loads on the Neon path.
-  // One in-memory instance per process, shared across HMR module instances, so
-  // data survives source edits (it resets on dev-server restart).
+  // One PGLite instance per process, stored on disk under .data/pglite so a
+  // dev-server restart keeps preview data. Production with no DATABASE_URL
+  // stays in memory (see pgliteDataDir).
   globalRef.__pgliteInstance__ ??= (async () => {
     const { PGlite } = await import("@electric-sql/pglite");
-    const pg = new PGlite({
+    const pg = new PGlite(await pgliteDataDir(), {
       parsers: {
         [OID_INT8]: Number,
         [OID_DATE]: identity,
@@ -139,8 +151,10 @@ async function createPgliteSql(): Promise<Sql> {
     for (const { name, path } of pendingMigrations(Object.keys(migrations), done)) {
       // Apply + record atomically (parity with scripts/migrate.mjs) so a failed
       // statement can't leave a file half-applied but untracked.
+      const sqlText = migrations[path];
+      if (!sqlText) continue;
       await pg.transaction(async (tx) => {
-        await tx.exec(migrations[path]);
+        await tx.exec(sqlText);
         await tx.query("insert into _migrations (name) values ($1)", [name]);
       });
     }
@@ -202,7 +216,7 @@ export async function getPglite(): Promise<import("@electric-sql/pglite").PGlite
 /**
  * Finish DB bootstrap before the server handles traffic.
  *
- * - **PGLite** (preview / no `DATABASE_URL`): open the in-memory DB and apply
+ * - **PGLite** (preview / no `DATABASE_URL`): open the on-disk DB and apply
  *   `migrations/*.sql`. Idempotent — concurrent callers share one promise.
  * - **Neon**: no-op (pool is created lazily on first query).
  *

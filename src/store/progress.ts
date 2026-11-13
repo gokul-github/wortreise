@@ -60,10 +60,16 @@ function yesterdayKey() {
   return `${y}-${m}-${day}`;
 }
 
-function load(): ProgressData {
+function readLocal(): string | null {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return { ...defaults };
+    return localStorage.getItem(SAVE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function parseSave(raw: string): ProgressData {
+  try {
     const parsed = JSON.parse(raw) as Partial<ProgressData>;
     return {
       ...defaults,
@@ -79,26 +85,110 @@ function load(): ProgressData {
   }
 }
 
-function persist(state: ProgressData) {
+const IDB_NAME = "wortreise";
+const IDB_STORE = "kv";
+
+function idbFactory(): IDBFactory | null {
   try {
-    const data: ProgressData = {
-      version: SAVE_VERSION,
-      xp: state.xp,
-      streak: state.streak,
-      lastPlayDate: state.lastPlayDate,
-      mastery: state.mastery,
-      seen: state.seen,
-      correct: state.correct,
-      wrong: state.wrong,
-      bestSpeedScore: state.bestSpeedScore,
-      bestCombo: state.bestCombo,
-      sound: state.sound,
-      direction: state.direction,
+    if (typeof indexedDB === "undefined" || !indexedDB) return null;
+    return indexedDB;
+  } catch {
+    return null;
+  }
+}
+
+function openSaveDb(): Promise<IDBDatabase | null> {
+  const factory = idbFactory();
+  if (!factory) return Promise.resolve(null);
+  return new Promise((resolve) => {
+    let request: IDBOpenDBRequest;
+    try {
+      request = factory.open(IDB_NAME, 1);
+    } catch {
+      resolve(null);
+      return;
+    }
+    request.onupgradeneeded = () => {
+      const db = request.result;
+      if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE);
     };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => resolve(null);
+    request.onblocked = () => resolve(null);
+  });
+}
+
+/** Extra copy of the same save JSON. localStorage stays the source of truth. */
+function mirrorSave(data: ProgressData): void {
+  void openSaveDb().then((db) => {
+    if (!db) return;
+    try {
+      const tx = db.transaction(IDB_STORE, "readwrite");
+      tx.objectStore(IDB_STORE).put(JSON.stringify(data), SAVE_KEY);
+      const close = () => {
+        try {
+          db.close();
+        } catch {
+          /* already closed */
+        }
+      };
+      tx.oncomplete = close;
+      tx.onerror = close;
+      tx.onabort = close;
+    } catch {
+      try {
+        db.close();
+      } catch {
+        /* already closed */
+      }
+    }
+  });
+}
+
+function readMirror(): Promise<string | null> {
+  return openSaveDb().then((db) => {
+    if (!db) return null;
+    return new Promise((resolve) => {
+      try {
+        const tx = db.transaction(IDB_STORE, "readonly");
+        const request = tx.objectStore(IDB_STORE).get(SAVE_KEY);
+        request.onsuccess = () => {
+          const value = request.result;
+          try {
+            db.close();
+          } catch {
+            /* already closed */
+          }
+          resolve(typeof value === "string" ? value : null);
+        };
+        request.onerror = () => {
+          try {
+            db.close();
+          } catch {
+            /* already closed */
+          }
+          resolve(null);
+        };
+      } catch {
+        try {
+          db.close();
+        } catch {
+          /* already closed */
+        }
+        resolve(null);
+      }
+    });
+  });
+}
+
+function persist(state: ProgressData) {
+  const data = snapshot(state);
+  try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch {
     /* private mode / quota */
   }
+  mirrorSave(data);
 }
 
 type Store = ProgressData & {
@@ -114,7 +204,25 @@ type Store = ProgressData & {
 
 export const useProgress = create<Store>((set, get) => ({
   ...defaults,
-  hydrate: () => set(load()),
+  hydrate: () => {
+    const raw = readLocal();
+    if (raw) {
+      const data = parseSave(raw);
+      set(data);
+      mirrorSave(data);
+      return;
+    }
+    void readMirror().then((text) => {
+      if (!text || readLocal()) return;
+      const data = parseSave(text);
+      try {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(snapshot(data)));
+      } catch {
+        /* session still restores from the mirror */
+      }
+      set(data);
+    });
+  },
   record: (wordId, ok, xpGain = ok ? 10 : 2) => {
     const s = get();
     const mastery = { ...s.mastery };

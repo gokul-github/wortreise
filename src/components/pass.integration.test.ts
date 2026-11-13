@@ -268,6 +268,7 @@ describe("Progress Store Integration", () => {
 
   it("topic mastery calculates correctly", () => {
     const topic = TOPICS[0];
+    assert.ok(topic);
     const pool = WORDS.filter((w) => w.topic === topic.id);
     const mastery: Record<string, number> = {};
     pool.slice(0, 4).forEach((w, i) => {
