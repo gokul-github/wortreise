@@ -6,11 +6,11 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import {
   PERSONS,
-  STATS,
   TOPICS,
-  WORDS,
   regularityLabel,
+  statsFor,
   verbForm,
+  wordsFor,
   type TopicId,
   type Word,
 } from "@/data";
@@ -30,6 +30,8 @@ function rank(w: Word, needle: string) {
 
 export function Dictionary() {
   const mastery = useProgress((s) => s.mastery);
+  const track = useProgress((s) => s.track);
+  const stats = statsFor(track);
   const [q, setQ] = useState("");
   const [topic, setTopic] = useState<TopicId | "all">("all");
   const [pos, setPos] = useState<"all" | "noun" | "verb">("all");
@@ -37,7 +39,7 @@ export function Dictionary() {
 
   const list = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    const filtered = WORDS.filter((w) => {
+    const filtered = wordsFor(track).filter((w) => {
       if (topic !== "all" && w.topic !== topic) return false;
       if (pos === "noun" && w.pos !== "noun") return false;
       if (pos === "verb" && w.pos !== "verb") return false;
@@ -50,14 +52,15 @@ export function Dictionary() {
     });
     if (!needle) return filtered;
     return [...filtered].sort((a, b) => rank(a, needle) - rank(b, needle));
-  }, [q, topic, pos]);
+  }, [q, topic, pos, track]);
 
   return (
     <div>
       <p className="text-xs uppercase tracking-[0.18em] text-muted">Word list</p>
       <h1 className="mt-2 font-display text-4xl font-semibold">Dictionary</h1>
       <p className="mt-2 text-muted">
-        {STATS.words} entries from Start Deutsch 1, with example sentences from the official list.
+        {stats.words} entries from {track === "telc" ? "the telc A1 lists" : "Start Deutsch 1"},
+        with English for every word.
       </p>
 
       <div className="relative mt-6">

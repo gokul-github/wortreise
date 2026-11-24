@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import type { TopicId } from "@/data/types";
 import { buildQuiz, type QuizQuestion, getWordBackgroundClass, getWordTextClass } from "@/lib/quiz";
-import { wordsByTopic, getTopicWordCount } from "@/data";
+import { getTopicWordCount } from "@/data";
 import { speakGerman, unlockSpeech } from "@/lib/speech";
 import { playCorrect, playWrong, unlockAudio } from "@/lib/sfx";
 import { cn } from "@/lib/utils";
@@ -38,6 +38,7 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
   const setDirection = useProgress((s) => s.setDirection);
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
+  const track = useProgress((s) => s.track);
 
   const [topic, setTopic] = useState<TopicId | "all">(initialTopic);
   const [count, setCount] = useState(10);
@@ -58,7 +59,7 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
 
   function start() {
     unlockAudio();
-    const qs = buildQuiz(topic, count, direction, mastery);
+    const qs = buildQuiz(topic, count, direction, mastery, track);
     setRound(qs);
     setIdx(0);
     setPicked(null);
@@ -112,7 +113,7 @@ export function QuizGame({ initialTopic = "all" }: { initialTopic?: TopicId | "a
   });
 
   if (!round) {
-    const topicTotal = topic === "all" ? 0 : getTopicWordCount(topic);
+    const topicTotal = topic === "all" ? 0 : getTopicWordCount(topic, track);
     const dynamicCounts = topicTotal > 0 ? [10, 20, 30, topicTotal] : [10, 20, 30];
 
     return (

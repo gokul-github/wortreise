@@ -16,6 +16,9 @@ export type TopicId =
   | "freizeit"
   | "alltag";
 
+/** Which official list a round is drawn from. */
+export type ExamTrack = "goethe" | "telc";
+
 export type Regularity = "regular" | "irregular" | "mixed" | "modal";
 
 export type VerbForms = {

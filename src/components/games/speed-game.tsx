@@ -14,6 +14,7 @@ export function SpeedGame() {
   const navigate = useNavigate();
   const mastery = useProgress((s) => s.mastery);
   const direction = useProgress((s) => s.direction);
+  const track = useProgress((s) => s.track);
   const record = useProgress((s) => s.record);
   const bumpSpeed = useProgress((s) => s.bumpSpeed);
   const sound = useProgress((s) => s.sound);
@@ -38,7 +39,7 @@ export function SpeedGame() {
   function start() {
     unlockAudio();
     ended.current = false;
-    const qs = buildQuiz(topic, 40, direction, mastery);
+    const qs = buildQuiz(topic, 40, direction, mastery, track);
     setQueue(qs);
     setIdx(0);
     setLeft(SECONDS);

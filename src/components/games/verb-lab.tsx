@@ -15,6 +15,7 @@ export function VerbLab() {
   const navigate = useNavigate();
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
+  const track = useProgress((s) => s.track);
 
   const [count, setCount] = useState(10);
   const [round, setRound] = useState<VerbQuestion[] | null>(null);
@@ -28,7 +29,7 @@ export function VerbLab() {
 
   function start() {
     unlockAudio();
-    setRound(buildVerbRound(count));
+    setRound(buildVerbRound(count, track));
     setIdx(0);
     setPicked(null);
     setCorrectCount(0);

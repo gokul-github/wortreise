@@ -18,6 +18,7 @@ export function TypeGame() {
   const mastery = useProgress((s) => s.mastery);
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
+  const track = useProgress((s) => s.track);
 
   const [topic, setTopic] = useState<TopicId | "all">("all");
   const [count, setCount] = useState(10);
@@ -33,7 +34,7 @@ export function TypeGame() {
 
   function start() {
     unlockAudio();
-    const pool = wordsByTopic(topic).filter((w) => w.pos !== "det" && w.lemma.length > 1);
+    const pool = wordsByTopic(topic, track).filter((w) => w.pos !== "det" && w.lemma.length > 1);
     const weighted = [...pool].sort(
       (a, b) => (mastery[a.id] ?? 0) - (mastery[b.id] ?? 0) || Math.random() - 0.5,
     );

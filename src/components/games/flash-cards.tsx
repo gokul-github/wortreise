@@ -22,6 +22,7 @@ export function FlashCards() {
   const mastery = useProgress((s) => s.mastery);
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
+  const track = useProgress((s) => s.track);
 
   const [topic, setTopic] = useState<TopicId | "all">("all");
   const [count, setCount] = useState(12);
@@ -35,7 +36,7 @@ export function FlashCards() {
 
   function start() {
     unlockAudio();
-    const pool = wordsByTopic(topic);
+    const pool = wordsByTopic(topic, track);
     const weighted = [...pool].sort(
       (a, b) => (mastery[a.id] ?? 0) - (mastery[b.id] ?? 0) || Math.random() - 0.5,
     );

@@ -1,5 +1,5 @@
 import { create } from "zustand";
-import { TOPICS, type TopicId } from "@/data/types";
+import { TOPICS, type ExamTrack, type TopicId, type Word } from "@/data/types";
 import { WORDS } from "@/data";
 
 const SAVE_KEY = "wortreise-save-v1";
@@ -26,6 +26,7 @@ export type ProgressData = {
   bestCombo: number;
   sound: boolean;
   direction: "mix" | "de-en" | "en-de";
+  track: ExamTrack;
 };
 
 const defaults: ProgressData = {
@@ -41,6 +42,7 @@ const defaults: ProgressData = {
   bestCombo: 0,
   sound: true,
   direction: "mix",
+  track: "goethe",
 };
 
 function todayKey() {
@@ -79,6 +81,7 @@ function parseSave(raw: string): ProgressData {
       seen: parsed.seen ?? {},
       correct: parsed.correct ?? {},
       wrong: parsed.wrong ?? {},
+      track: parsed.track === "telc" ? "telc" : "goethe",
     };
   } catch {
     return { ...defaults };
@@ -197,6 +200,7 @@ type Store = ProgressData & {
   bumpSpeed: (score: number, combo: number) => void;
   setSound: (on: boolean) => void;
   setDirection: (d: ProgressData["direction"]) => void;
+  setTrack: (track: ExamTrack) => void;
   reset: () => void;
   exportBackup: () => BackupData;
   importBackup: (backup: BackupData) => { success: boolean; error?: string };
@@ -244,7 +248,7 @@ export const useProgress = create<Store>((set, get) => ({
       streak = s.lastPlayDate === yesterdayKey() ? s.streak + 1 : 1;
     }
     const next: ProgressData = {
-      version: SAVE_VERSION,
+      ...snapshot(s),
       xp: s.xp + xpGain,
       streak,
       lastPlayDate: today,
@@ -252,10 +256,6 @@ export const useProgress = create<Store>((set, get) => ({
       seen,
       correct,
       wrong,
-      bestSpeedScore: s.bestSpeedScore,
-      bestCombo: s.bestCombo,
-      sound: s.sound,
-      direction: s.direction,
     };
     persist(next);
     set(next);
@@ -263,18 +263,9 @@ export const useProgress = create<Store>((set, get) => ({
   bumpSpeed: (score, combo) => {
     const s = get();
     const next: ProgressData = {
-      version: SAVE_VERSION,
-      xp: s.xp,
-      streak: s.streak,
-      lastPlayDate: s.lastPlayDate,
-      mastery: s.mastery,
-      seen: s.seen,
-      correct: s.correct,
-      wrong: s.wrong,
+      ...snapshot(s),
       bestSpeedScore: Math.max(s.bestSpeedScore, score),
       bestCombo: Math.max(s.bestCombo, combo),
-      sound: s.sound,
-      direction: s.direction,
     };
     persist(next);
     set(next);
@@ -288,6 +279,12 @@ export const useProgress = create<Store>((set, get) => ({
   setDirection: (d) => {
     const s = get();
     const next = { ...snapshot(s), direction: d };
+    persist(next);
+    set(next);
+  },
+  setTrack: (track) => {
+    const s = get();
+    const next = { ...snapshot(s), track };
     persist(next);
     set(next);
   },
@@ -337,7 +334,12 @@ export const useProgress = create<Store>((set, get) => ({
       }
     }
     // Version check - migrate if needed (for future)
-    const data = { ...backup.data, version: SAVE_VERSION };
+    const data: ProgressData = {
+      ...defaults,
+      ...backup.data,
+      version: SAVE_VERSION,
+      track: backup.data.track === "telc" ? "telc" : "goethe",
+    };
     persist(data);
     set(data);
     return { success: true };
@@ -358,14 +360,16 @@ function snapshot(s: ProgressData): ProgressData {
     bestCombo: s.bestCombo,
     sound: s.sound,
     direction: s.direction,
+    track: s.track === "telc" ? "telc" : "goethe",
   };
 }
 
 export function topicMastery(
   mastery: Record<string, number>,
   topic: TopicId,
+  words: Word[] = WORDS,
 ): { known: number; total: number; pct: number } {
-  const pool = WORDS.filter((w) => w.topic === topic);
+  const pool = words.filter((w) => w.topic === topic);
   const known = pool.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
   return {
     known,
@@ -374,6 +378,6 @@ export function topicMastery(
   };
 }
 
-export function stampedTopics(mastery: Record<string, number>): TopicId[] {
-  return TOPICS.filter((t) => topicMastery(mastery, t.id).pct >= 40).map((t) => t.id);
+export function stampedTopics(mastery: Record<string, number>, words: Word[] = WORDS): TopicId[] {
+  return TOPICS.filter((t) => topicMastery(mastery, t.id, words).pct >= 40).map((t) => t.id);
 }

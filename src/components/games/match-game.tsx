@@ -14,6 +14,7 @@ export function MatchGame() {
   const navigate = useNavigate();
   const record = useProgress((s) => s.record);
   const sound = useProgress((s) => s.sound);
+  const track = useProgress((s) => s.track);
 
   const [topic, setTopic] = useState<TopicId | "all">("all");
   const [cards, setCards] = useState<Card[] | null>(null);
@@ -29,7 +30,7 @@ export function MatchGame() {
 
   function start() {
     unlockAudio();
-    const pairs = matchPairs(topic, 6);
+    const pairs = matchPairs(topic, 6, track);
     const built: Card[] = [];
     for (const w of pairs) {
       built.push({ key: `${w.id}-de`, word: w, side: "de", label: w.display });

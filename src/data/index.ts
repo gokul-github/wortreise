@@ -1,6 +1,7 @@
-import type { PersonKey, TopicId, Word } from "./types";
+import type { ExamTrack, PersonKey, TopicId, Word } from "./types";
 import { LEXICON_WORDS } from "./words";
 import { VERB_WORDS } from "./verbs";
+import { TELC_WORDS } from "./telc-words";
 
 export * from "./types";
 export { VERB_WORDS } from "./verbs";
@@ -16,13 +17,46 @@ for (const w of VERB_WORDS) add(w);
 
 export const WORDS: Word[] = [...byId.values()];
 
+function plainLemma(s: string): string {
+  return s
+    .toLowerCase()
+    .replace(/ß/g, "ss")
+    .replace(/ä/g, "ae")
+    .replace(/ö/g, "oe")
+    .replace(/ü/g, "ue")
+    .replace(/\([^)]*\)/g, "")
+    .replace(/^sich\s+/, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .trim();
+}
+
+const verbForms = new Map(
+  VERB_WORDS.filter((w) => w.verb).map((w) => [plainLemma(w.lemma), w.verb] as const),
+);
+
+/** telc headwords, with Goethe present-tense forms where the verb matches. */
+export const TELC_LEXICON: Word[] = TELC_WORDS.map((w) => {
+  if (w.pos !== "verb" || w.verb) return w;
+  const verb = verbForms.get(plainLemma(w.lemma));
+  return verb ? { ...w, verb } : w;
+});
+
+export function wordsFor(track: ExamTrack = "goethe"): Word[] {
+  return track === "telc" ? TELC_LEXICON : WORDS;
+}
+
 export const VERBS: Word[] = WORDS.filter((w) => w.pos === "verb" && w.verb);
 
 export const NOUNS: Word[] = WORDS.filter((w) => w.pos === "noun" && w.article);
 
-export function wordsByTopic(topic: TopicId | "all"): Word[] {
-  if (topic === "all") return WORDS;
-  return WORDS.filter((w) => w.topic === topic);
+export function verbsFor(track: ExamTrack = "goethe"): Word[] {
+  return wordsFor(track).filter((w) => w.pos === "verb" && w.verb);
+}
+
+export function wordsByTopic(topic: TopicId | "all", track: ExamTrack = "goethe"): Word[] {
+  const list = wordsFor(track);
+  if (topic === "all") return list;
+  return list.filter((w) => w.topic === topic);
 }
 
 export function getWord(id: string): Word | undefined {
@@ -92,6 +126,15 @@ export const STATS = {
   nouns: NOUNS.length,
 };
 
-export function getTopicWordCount(topic: TopicId | "all"): number {
-  return wordsByTopic(topic).length;
+export function statsFor(track: ExamTrack = "goethe") {
+  const list = wordsFor(track);
+  return {
+    words: list.length,
+    verbs: list.filter((w) => w.pos === "verb" && w.verb).length,
+    nouns: list.filter((w) => w.pos === "noun" && w.article).length,
+  };
+}
+
+export function getTopicWordCount(topic: TopicId | "all", track: ExamTrack = "goethe"): number {
+  return wordsByTopic(topic, track).length;
 }

@@ -1,6 +1,29 @@
 import { TOPICS, type TopicId } from "@/data/types";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useProgress } from "@/store/progress";
+
+export function ExamTrackPicker({ className }: { className?: string }) {
+  const track = useProgress((s) => s.track);
+  const setTrack = useProgress((s) => s.setTrack);
+  return (
+    <fieldset className={className}>
+      <legend className="text-sm font-medium text-fg">Word list</legend>
+      <p className="mt-1 max-w-prose text-sm text-muted">
+        Choose Goethe or telc, then start. Goethe is Start Deutsch 1. telc is Auf jeden Fall,
+        Einfach gut, and Einfach los.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Chip active={track === "goethe"} onClick={() => setTrack("goethe")}>
+          Goethe
+        </Chip>
+        <Chip active={track === "telc"} onClick={() => setTrack("telc")}>
+          telc
+        </Chip>
+      </div>
+    </fieldset>
+  );
+}
 
 export function GameSetup({
   title,
@@ -27,11 +50,16 @@ export function GameSetup({
   startLabel?: string;
   hideTopic?: boolean;
 }) {
+  const track = useProgress((s) => s.track);
   return (
     <div className="rise-in mx-auto max-w-2xl">
-      <p className="text-xs uppercase tracking-[0.18em] text-muted">Start Deutsch 1</p>
+      <p className="text-xs uppercase tracking-[0.18em] text-muted">
+        {track === "telc" ? "telc A1" : "Start Deutsch 1"}
+      </p>
       <h1 className="mt-2 font-display text-4xl font-semibold tracking-tight text-fg">{title}</h1>
       <p className="mt-3 max-w-prose text-muted">{blurb}</p>
+
+      <ExamTrackPicker className="mt-8" />
 
       {hideTopic ? null : (
         <fieldset className="mt-8">

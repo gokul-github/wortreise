@@ -9,8 +9,9 @@ import {
   Stamp,
   Timer,
 } from "lucide-react";
-import { STATS, TOPICS } from "@/data";
+import { TOPICS, statsFor, wordsFor } from "@/data";
 import { cn } from "@/lib/utils";
+import { ExamTrackPicker } from "@/components/game-setup";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
 
 const MODES = [
@@ -55,8 +56,11 @@ const MODES = [
 export function Home() {
   const mastery = useProgress((s) => s.mastery);
   const xp = useProgress((s) => s.xp);
-  const stamps = stampedTopics(mastery);
-  const known = Object.values(mastery).filter((n) => n >= 3).length;
+  const track = useProgress((s) => s.track);
+  const list = wordsFor(track);
+  const stats = statsFor(track);
+  const stamps = stampedTopics(mastery, list);
+  const known = list.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
 
   return (
     <div className="rise-in">
@@ -66,15 +70,16 @@ export function Home() {
           className="pointer-events-none absolute -right-8 -top-10 size-40 rounded-full border-2 border-dashed border-accent/25"
         />
         <p className="text-xs uppercase tracking-[0.22em] text-muted">
-          Goethe A1 · Start Deutsch 1
+          {track === "telc" ? "telc A1" : "Goethe A1 · Start Deutsch 1"}
         </p>
         <h1 className="mt-3 max-w-xl font-display text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl">
           Wortreise
         </h1>
         <p className="mt-4 max-w-lg text-muted">
-          Play through the official A1 word list — about {STATS.words} entries, {STATS.verbs} verbs
-          with present-tense forms, and English for every card.
+          Play through the {track === "telc" ? "telc" : "Goethe"} A1 word list — about {stats.words}{" "}
+          entries, {stats.verbs} verbs with present-tense forms, and English for every card.
         </p>
+        <ExamTrackPicker className="mt-6" />
         <div className="mt-6 flex flex-wrap items-baseline gap-x-6 gap-y-3">
           <Stat k={known} v="words known" />
           <Stat k={xp} v="XP earned" />
@@ -135,7 +140,7 @@ export function Home() {
         </div>
         <div className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
           {TOPICS.map((t) => {
-            const m = topicMastery(mastery, t.id);
+            const m = topicMastery(mastery, t.id, list);
             const stamped = stamps.includes(t.id);
             return (
               <Link

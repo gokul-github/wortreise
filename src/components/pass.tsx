@@ -1,6 +1,6 @@
 import { useRef, useState, useEffect } from "react";
 import { Download, Stamp, Upload, Database, RefreshCw, Volume2, Mic, Settings } from "lucide-react";
-import { TOPICS, STATS, VERBS, type TopicId } from "@/data";
+import { TOPICS, statsFor, verbsFor, wordsFor, type TopicId } from "@/data";
 import { Button } from "@/components/ui/button";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
 import {
@@ -48,9 +48,12 @@ export function Pass() {
   const bestSpeed = useProgress((s) => s.bestSpeedScore);
   const bestCombo = useProgress((s) => s.bestCombo);
   const reset = useProgress((s) => s.reset);
-  const stamps = stampedTopics(mastery);
-  const known = Object.values(mastery).filter((n) => n >= 3).length;
-  const verbKnown = VERBS.filter((v) => (mastery[v.id] ?? 0) >= 3).length;
+  const track = useProgress((s) => s.track);
+  const list = wordsFor(track);
+  const stats = statsFor(track);
+  const stamps = stampedTopics(mastery, list);
+  const known = list.filter((w) => (mastery[w.id] ?? 0) >= 3).length;
+  const verbKnown = verbsFor(track).filter((v) => (mastery[v.id] ?? 0) >= 3).length;
 
   const [importStatus, setImportStatus] = useState<{ success: boolean; message: string } | null>(
     null,
@@ -198,8 +201,8 @@ export function Pass() {
       <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Mini k={xp} v="XP" />
         <Mini k={streak} v="day streak" />
-        <Mini k={known} v={`of ${STATS.words} known`} />
-        <Mini k={verbKnown} v={`of ${STATS.verbs} verbs`} />
+        <Mini k={known} v={`of ${stats.words} known`} />
+        <Mini k={verbKnown} v={`of ${stats.verbs} verbs`} />
       </div>
 
       <div className="mt-4 grid grid-cols-2 gap-3 text-sm text-muted">
@@ -213,7 +216,7 @@ export function Pass() {
 
       <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
         {TOPICS.map((t) => {
-          const m = topicMastery(mastery, t.id);
+          const m = topicMastery(mastery, t.id, list);
           const on = stamps.includes(t.id);
           const palette = TOPIC_PALETTE[t.id];
           return (

@@ -1,9 +1,9 @@
 import {
-  NOUNS,
-  VERBS,
   pickN,
   shuffle,
+  verbsFor,
   wordsByTopic,
+  type ExamTrack,
   type PersonKey,
   type TopicId,
   type Word,
@@ -54,8 +54,9 @@ export function buildQuiz(
   count: number,
   direction: "mix" | "de-en" | "en-de",
   mastery: Record<string, number>,
+  track: ExamTrack = "goethe",
 ): QuizQuestion[] {
-  const pool = wordsByTopic(topic).filter((w) => w.en && w.lemma);
+  const pool = wordsByTopic(topic, track).filter((w) => w.en && w.lemma);
   if (pool.length < 4) return [];
   const weighted = [...pool].sort((a, b) => {
     return (mastery[a.id] ?? 0) - (mastery[b.id] ?? 0) || Math.random() - 0.5;
@@ -118,8 +119,9 @@ function makeQuestion(
   };
 }
 
-export function buildVerbRound(count: number): VerbQuestion[] {
-  const pool = VERBS.filter((w) => w.verb);
+export function buildVerbRound(count: number, track: ExamTrack = "goethe"): VerbQuestion[] {
+  const pool = verbsFor(track);
+  if (pool.length < 4) return [];
   const chosen = pickN(pool, Math.min(count, pool.length));
   return chosen.map((word, i) => {
     const person = PERSONS[i % PERSONS.length]!;
@@ -139,17 +141,19 @@ export function buildVerbRound(count: number): VerbQuestion[] {
   });
 }
 
-export function matchPairs(topic: TopicId | "all", n = 6) {
-  const pool = wordsByTopic(topic).filter((w) => w.en);
+export function matchPairs(topic: TopicId | "all", n = 6, track: ExamTrack = "goethe") {
+  const pool = wordsByTopic(topic, track).filter((w) => w.en);
   return pickN(pool, Math.min(n, pool.length));
 }
 
-export function typePrompt(topic: TopicId | "all", mastery: Record<string, number>) {
-  const pool = wordsByTopic(topic).filter((w) => w.lemma);
+export function typePrompt(
+  topic: TopicId | "all",
+  mastery: Record<string, number>,
+  track: ExamTrack = "goethe",
+) {
+  const pool = wordsByTopic(topic, track).filter((w) => w.lemma);
   const sorted = [...pool].sort(
     (a, b) => (mastery[a.id] ?? 0) - (mastery[b.id] ?? 0) || Math.random() - 0.5,
   );
   return sorted[0] ?? pool[0]!;
 }
-
-export { NOUNS };
