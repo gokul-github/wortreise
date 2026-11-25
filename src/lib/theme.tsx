@@ -10,7 +10,14 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+// Default context for SSR - provides a safe fallback
+const defaultContext: ThemeContextType = {
+  theme: "light",
+  toggleTheme: () => {},
+  setTheme: () => {},
+};
+
+const ThemeContext = createContext<ThemeContextType>(defaultContext);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
@@ -35,21 +42,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     setTheme(theme === "light" ? "dark" : "light");
   };
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
+  // During SSR (mounted=false), provide default context but still render children
+  const contextValue = mounted
+    ? { theme, toggleTheme, setTheme }
+    : defaultContext;
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={contextValue}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    throw new Error("useTheme must be used within a ThemeProvider");
-  }
-  return context;
+  return useContext(ThemeContext);
 }
