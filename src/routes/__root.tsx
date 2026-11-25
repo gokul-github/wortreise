@@ -1,6 +1,7 @@
 import { createRootRoute, HeadContent, Outlet, Scripts } from "@tanstack/react-router";
 import { AuthProvider } from "@/lib/auth/provider";
 import { PreviewHostBridge } from "@/components/preview-host-bridge";
+import { ThemeProvider } from "@/lib/theme";
 import appCss from "../styles.css?url";
 
 const APP_NAME = "Wortreise";
@@ -14,7 +15,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Play through the official Goethe A1 Start Deutsch 1 word list — quizzes, verb lab, and a traveler’s pass.",
+          "Play through the official Goethe A1 Start Deutsch 1 word list — quizzes, verb lab, and a traveler's pass.",
       },
       { name: "theme-color", content: "#1F4E45" },
     ],
@@ -38,9 +39,11 @@ export const Route = createRootRoute({
       </head>
       <body>
         <PreviewHostBridge />
-        <AuthProvider>
-          <Outlet />
-        </AuthProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            <Outlet />
+          </AuthProvider>
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>

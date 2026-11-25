@@ -1,26 +1,48 @@
 @import "tailwindcss";
 
 @theme {
-  --color-bg: #f1ebe1;
-  --color-surface: #fbf7f0;
-  --color-surface-2: #ebe4d6;
-  --color-ink: #1c1916;
-  --color-fg: #1c1916;
-  --color-muted: #6f675e;
-  --color-subtle: #8a8175;
-  --color-accent: #1f4e45;
-  --color-accent-hover: #173c35;
-  --color-accent-fg: #fbf7f0;
-  --color-accent-soft: #dce8e3;
-  --color-border: color-mix(in oklab, var(--color-ink) 12%, transparent);
-  --color-border-strong: color-mix(in oklab, var(--color-ink) 22%, transparent);
-  --color-der: #2c4f7c;
-  --color-die: #8a3344;
-  --color-das: #2f6b4a;
-  --color-verb: #7a3f6b;
-  --color-success: #2a6b4a;
-  --color-danger: #8f2d2d;
-  --color-warn: #8a5a20;
+  --color-bg: #f5f0e6;
+  --color-surface: #fdfbf7;
+  --color-surface-2: #e8e0d4;
+  --color-ink: #0d0c0a;
+  --color-fg: #0d0c0a;
+  --color-muted: #4a453d;
+  --color-subtle: #666058;
+  --color-accent: #103d35;
+  --color-accent-hover: #0a2d27;
+  --color-accent-fg: #fdfbf7;
+  --color-accent-soft: #c8ddd4;
+  --color-border: color-mix(in oklab, var(--color-ink) 22%, transparent);
+  --color-border-strong: color-mix(in oklab, var(--color-ink) 36%, transparent);
+  --color-der: #1e3d65;
+  --color-die: #6d2434;
+  --color-das: #205338;
+  --color-verb: #5e2f53;
+  --color-success: #1d5438;
+  --color-danger: #702020;
+  --color-warn: #6d4418;
+
+  /* Dark mode colors */
+  --color-bg-dark: #141311;
+  --color-surface-dark: #1c1b18;
+  --color-surface-2-dark: #2a2825;
+  --color-ink-dark: #f5f0e6;
+  --color-fg-dark: #f5f0e6;
+  --color-muted-dark: #b8b0a4;
+  --color-subtle-dark: #9a9286;
+  --color-accent-dark: #4ade80;
+  --color-accent-hover-dark: #22c55e;
+  --color-accent-fg-dark: #141311;
+  --color-accent-soft-dark: #166534;
+  --color-border-dark: color-mix(in oklab, var(--color-ink-dark) 22%, transparent);
+  --color-border-strong-dark: color-mix(in oklab, var(--color-ink-dark) 36%, transparent);
+  --color-der-dark: #60a5fa;
+  --color-die-dark: #f87171;
+  --color-das-dark: #4ade80;
+  --color-verb-dark: #f472b6;
+  --color-success-dark: #4ade80;
+  --color-danger-dark: #f87171;
+  --color-warn-dark: #fbbf24;
 
   --font-display: "Fraunces", "Iowan Old Style", "Palatino Linotype", serif;
   --font-sans: "Figtree", "Segoe UI", system-ui, sans-serif;
@@ -36,6 +58,13 @@
   --shadow-ticket:
     0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent),
     0 12px 32px -18px color-mix(in oklab, var(--color-ink) 28%, transparent);
+  --shadow-ticket-dark:
+    0 1px 0 color-mix(in oklab, var(--color-ink-dark) 6%, transparent),
+    0 12px 32px -18px color-mix(in oklab, var(--color-ink-dark) 28%, transparent);
+
+  /* Base font size and line height */
+  --base-font-size: 20px;
+  --base-line-height: 1.8;
 }
 
 @layer base {
@@ -55,12 +84,61 @@
     background-color: var(--color-bg);
     color: var(--color-fg);
     font-family: var(--font-sans);
-    line-height: 1.5;
+    font-size: var(--base-font-size);
+    line-height: var(--base-line-height);
     background-image: radial-gradient(
       color-mix(in oklab, var(--color-ink) 5%, transparent) 0.6px,
       transparent 0.6px
     );
     background-size: 4px 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  /* Dark mode */
+  [data-theme="dark"] body {
+    background-color: var(--color-bg-dark);
+    color: var(--color-fg-dark);
+    background-image: radial-gradient(
+      color-mix(in oklab, var(--color-ink-dark) 5%, transparent) 0.6px,
+      transparent 0.6px
+    );
+  }
+
+  [data-theme="dark"] {
+    --color-bg: var(--color-bg-dark);
+    --color-surface: var(--color-surface-dark);
+    --color-surface-2: var(--color-surface-2-dark);
+    --color-ink: var(--color-ink-dark);
+    --color-fg: var(--color-fg-dark);
+    --color-muted: var(--color-muted-dark);
+    --color-subtle: var(--color-subtle-dark);
+    --color-accent: var(--color-accent-dark);
+    --color-accent-hover: var(--color-accent-hover-dark);
+    --color-accent-fg: var(--color-accent-fg-dark);
+    --color-accent-soft: var(--color-accent-soft-dark);
+    --color-border: var(--color-border-dark);
+    --color-border-strong: var(--color-border-strong-dark);
+    --color-der: var(--color-der-dark);
+    --color-die: var(--color-die-dark);
+    --color-das: var(--color-das-dark);
+    --color-verb: var(--color-verb-dark);
+    --color-success: var(--color-success-dark);
+    --color-danger: var(--color-danger-dark);
+    --color-warn: var(--color-warn-dark);
+    --shadow-ticket: var(--shadow-ticket-dark);
+  }
+
+  [data-theme="dark"] .bg-article-der-light {
+    background-color: color-mix(in oklab, var(--color-der-dark) 15%, transparent);
+  }
+  [data-theme="dark"] .bg-article-die-light {
+    background-color: color-mix(in oklab, var(--color-die-dark) 15%, transparent);
+  }
+  [data-theme="dark"] .bg-article-das-light {
+    background-color: color-mix(in oklab, var(--color-das-dark) 15%, transparent);
+  }
+  [data-theme="dark"] .bg-verb-light {
+    background-color: color-mix(in oklab, var(--color-verb-dark) 15%, transparent);
   }
 
   h1,

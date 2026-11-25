@@ -1,11 +1,12 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { BookOpen, House, Library, LogIn, Stamp, Volume2, VolumeX } from "lucide-react";
+import { BookOpen, House, Library, LogIn, Stamp, Volume2, VolumeX, Sun, Moon } from "lucide-react";
 import { useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { unlockAudio } from "@/lib/sfx";
 import { unlockSpeech } from "@/lib/speech";
 import { useProgress } from "@/store/progress";
 import { SignedIn, SignedOut, UserButton, SIGN_IN_PATH } from "@/lib/auth/gates";
+import { ThemeToggle, useTheme } from "@/components/theme-toggle";
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const hydrate = useProgress((s) => s.hydrate);
@@ -14,6 +15,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const sound = useProgress((s) => s.sound);
   const setSound = useProgress((s) => s.setSound);
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { theme, toggleTheme } = useTheme();
 
   useEffect(() => {
     hydrate();
@@ -86,6 +88,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             >
               {sound ? <Volume2 className="size-4" /> : <VolumeX className="size-4" />}
             </button>
+            <ThemeToggle />
             <SignedOut>
               <Link
                 to={SIGN_IN_PATH}
@@ -108,7 +111,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
       </main>
 
       <nav className="fixed inset-x-0 bottom-0 z-20 border-t border-border bg-surface/95 backdrop-blur-sm sm:hidden">
-        <div className="safe-pad-bottom grid grid-cols-4 px-2">
+        <div className="safe-pad-bottom grid grid-cols-5 px-2">
           <NavItem to="/" icon={House} label="Play" active={path === "/"} />
           <NavItem to="/words" icon={Library} label="Words" active={path.startsWith("/words")} />
           <NavItem to="/pass" icon={Stamp} label="Pass" active={path.startsWith("/pass")} />
@@ -118,6 +121,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
             label="Study"
             active={path.startsWith("/play/cards")}
           />
+          <button
+            type="button"
+            onClick={toggleTheme}
+            aria-label={theme === "light" ? "Switch to dark mode" : "Switch to light mode"}
+            className={cn(
+              "flex flex-col items-center gap-0.5 py-2.5 text-[11px] no-underline text-muted",
+            )}
+          >
+            {theme === "light" ? <Moon className="size-5" /> : <Sun className="size-5" />}
+            <span>Theme</span>
+          </button>
         </div>
       </nav>
     </div>
