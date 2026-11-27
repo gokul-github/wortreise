@@ -10,50 +10,61 @@ interface ThemeContextType {
   setTheme: (theme: Theme) => void;
 }
 
-// Default context for SSR - provides a safe fallback
-const defaultContext: ThemeContextType = {
-  theme: "light",
-  toggleTheme: () => {},
-  setTheme: () => {},
-};
+const ThemeContext = createContext<ThemeContextType | null>(null);
 
-const ThemeContext = createContext<ThemeContextType>(defaultContext);
+function paintTheme(theme: Theme) {
+  document.documentElement.setAttribute("data-theme", theme);
+  document.documentElement.style.colorScheme = theme;
+}
+
+function rememberTheme(theme: Theme) {
+  try {
+    localStorage.setItem("theme", theme);
+  } catch {
+    /* storage can be unavailable */
+  }
+}
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>("light");
-  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true);
-    const stored = localStorage.getItem("theme") as Theme | null;
+    const stored = localStorage.getItem("theme");
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const initial = stored ?? (prefersDark ? "dark" : "light");
+    const initial: Theme =
+      stored === "dark" || stored === "light" ? stored : prefersDark ? "dark" : "light";
     setThemeState(initial);
-    document.documentElement.setAttribute("data-theme", initial);
+    paintTheme(initial);
   }, []);
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem("theme", newTheme);
-    document.documentElement.setAttribute("data-theme", newTheme);
+    rememberTheme(newTheme);
+    paintTheme(newTheme);
   };
 
   const toggleTheme = () => {
-    setTheme(theme === "light" ? "dark" : "light");
+    setThemeState((current) => {
+      const next: Theme = current === "light" ? "dark" : "light";
+      rememberTheme(next);
+      paintTheme(next);
+      return next;
+    });
   };
 
-  // During SSR (mounted=false), provide default context but still render children
-  const contextValue = mounted
-    ? { theme, toggleTheme, setTheme }
-    : defaultContext;
-
   return (
-    <ThemeContext.Provider value={contextValue}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const value = useContext(ThemeContext);
+  if (value) return value;
+  return {
+    theme: "light" as Theme,
+    toggleTheme: () => {},
+    setTheme: () => {},
+  };
 }

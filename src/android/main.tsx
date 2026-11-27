@@ -1,4 +1,4 @@
-import { StrictMode } from "react";
+import { StrictMode, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import { Capacitor, SystemBars, SystemBarsStyle } from "@capacitor/core";
 import {
@@ -21,6 +21,7 @@ import { VerbLab } from "@/components/games/verb-lab";
 import { Home } from "@/components/home";
 import { Pass } from "@/components/pass";
 import { Shell } from "@/components/shell";
+import { ThemeProvider, useTheme } from "@/lib/theme";
 import { SignInButtons } from "@/lib/auth/gates";
 import { AuthProvider } from "@/lib/auth/provider";
 import { topicFromSearch, type TopicId } from "@/data/types";
@@ -40,11 +41,24 @@ function BackLink() {
   );
 }
 
+function NativeThemeSync() {
+  const { theme } = useTheme();
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+    const style = theme === "dark" ? SystemBarsStyle.Dark : SystemBarsStyle.Light;
+    void SystemBars.setStyle({ style }).catch(() => undefined);
+  }, [theme]);
+  return null;
+}
+
 const rootRoute = createRootRoute({
   component: () => (
-    <AuthProvider>
-      <Outlet />
-    </AuthProvider>
+    <ThemeProvider>
+      <NativeThemeSync />
+      <AuthProvider>
+        <Outlet />
+      </AuthProvider>
+    </ThemeProvider>
   ),
 });
 
@@ -141,10 +155,6 @@ const router = createRouter({
   routeTree,
   history: createHashHistory(),
 });
-
-if (Capacitor.isNativePlatform()) {
-  void SystemBars.setStyle({ style: SystemBarsStyle.Light }).catch(() => undefined);
-}
 
 const root = document.getElementById("root");
 if (!root) throw new Error("Missing #root");
