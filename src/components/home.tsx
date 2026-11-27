@@ -10,8 +10,8 @@ import {
   Timer,
 } from "lucide-react";
 import { TOPICS, statsFor, wordsFor } from "@/data";
-import { cn } from "@/lib/utils";
 import { ExamTrackPicker } from "@/components/game-setup";
+import { TOPIC_PALETTE, tint } from "@/lib/topic-palette";
 import { stampedTopics, topicMastery, useProgress } from "@/store/progress";
 
 const MODES = [
@@ -20,36 +20,42 @@ const MODES = [
     title: "Quiz Rally",
     text: "Four choices, articles included.",
     icon: ListChecks,
+    color: "zahlen",
   },
   {
     mode: "speed",
     title: "Speed 45",
     text: "A 45-second combo run.",
     icon: Timer,
+    color: "essen",
   },
   {
     mode: "type",
     title: "Type the Word",
     text: "English in, German out.",
     icon: Keyboard,
+    color: "umwelt",
   },
   {
     mode: "verbs",
     title: "Verb Lab",
     text: "Regular, irregular, modal.",
     icon: SpellCheck2,
+    color: "einkaufen",
   },
   {
     mode: "match",
     title: "Match Pairs",
     text: "Pair DE with EN on a board.",
     icon: Layers,
+    color: "reisen",
   },
   {
     mode: "cards",
     title: "Flash Study",
     text: "Hear it, flip it, stamp it.",
     icon: BookOpen,
+    color: "freizeit",
   },
 ] as const;
 
@@ -114,19 +120,34 @@ export function Home() {
           </Link>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {MODES.map((m) => (
-            <Link
-              key={m.mode}
-              to="/play/$mode"
-              params={{ mode: m.mode }}
-              className="group relative overflow-hidden rounded-[24px] border border-border bg-surface p-5 no-underline shadow-ticket transition-transform duration-150 hover:-translate-y-0.5"
-            >
-              <span className="absolute left-0 top-6 h-8 w-2 rounded-r-full bg-accent/80" />
-              <m.icon className="size-5 text-accent" />
-              <h3 className="mt-3 font-display text-xl font-semibold text-fg">{m.title}</h3>
-              <p className="mt-1 text-sm text-muted">{m.text}</p>
-            </Link>
-          ))}
+          {MODES.map((m) => {
+            const palette = TOPIC_PALETTE[m.color];
+            return (
+              <Link
+                key={m.mode}
+                to="/play/$mode"
+                params={{ mode: m.mode }}
+                className="group relative overflow-hidden rounded-[24px] border p-5 no-underline shadow-ticket transition-transform duration-150 hover:-translate-y-0.5"
+                style={{
+                  borderColor: tint(palette.base, 0.35),
+                  backgroundColor: palette.soft,
+                }}
+              >
+                <span
+                  className="absolute left-0 top-6 h-8 w-2 rounded-r-full"
+                  style={{ backgroundColor: palette.base }}
+                />
+                <m.icon className="size-5" style={{ color: palette.base }} />
+                <h3
+                  className="mt-3 font-display text-xl font-semibold"
+                  style={{ color: palette.ink }}
+                >
+                  {m.title}
+                </h3>
+                <p className="mt-1 text-sm text-muted">{m.text}</p>
+              </Link>
+            );
+          })}
         </div>
       </section>
 
@@ -142,26 +163,42 @@ export function Home() {
           {TOPICS.map((t) => {
             const m = topicMastery(mastery, t.id, list);
             const stamped = stamps.includes(t.id);
+            const palette = TOPIC_PALETTE[t.id];
             return (
               <Link
                 key={t.id}
                 to="/play/$mode"
                 params={{ mode: "quiz" }}
                 search={{ topic: t.id }}
-                className="rounded-[20px] border border-border bg-surface p-4 no-underline"
+                className="relative overflow-hidden rounded-[20px] border p-4 no-underline"
+                style={{
+                  borderColor: tint(palette.base, stamped ? 0.45 : 0.18),
+                  backgroundColor: stamped ? palette.soft : tint(palette.soft, 0.55),
+                }}
               >
-                <div className="flex items-center justify-between">
-                  <p className="font-display text-lg font-semibold text-fg">{t.de}</p>
-                  {stamped ? <Stamp className="size-4 text-accent" /> : null}
+                <Stamp
+                  className="pointer-events-none absolute -right-2 -top-1 size-14 rotate-[-12deg]"
+                  style={{ color: tint(palette.base, stamped ? 0.5 : 0.18) }}
+                />
+                <div className="relative flex items-center justify-between gap-2">
+                  <p className="font-display text-lg font-semibold" style={{ color: palette.ink }}>
+                    {t.de}
+                  </p>
+                  {stamped ? (
+                    <Stamp className="size-4 shrink-0" style={{ color: palette.base }} />
+                  ) : null}
                 </div>
-                <p className="text-xs text-muted">{t.en}</p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-surface-2">
+                <p className="relative text-xs text-muted">{t.en}</p>
+                <div
+                  className="relative mt-3 h-1.5 overflow-hidden rounded-full"
+                  style={{ backgroundColor: tint(palette.soft, 0.7) }}
+                >
                   <div
-                    className={cn("h-full rounded-full bg-accent")}
-                    style={{ width: `${m.pct}%` }}
+                    className="h-full rounded-full"
+                    style={{ width: `${m.pct}%`, backgroundColor: palette.base }}
                   />
                 </div>
-                <p className="mt-1.5 text-[11px] tabular-nums text-subtle">
+                <p className="relative mt-1.5 text-[11px] tabular-nums text-subtle">
                   {m.known}/{m.total}
                 </p>
               </Link>
